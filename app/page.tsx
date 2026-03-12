@@ -1,119 +1,130 @@
+import {
+  Wrench,
+  Zap,
+  Droplets,
+  ShieldCheck,
+  Camera,
+  Sparkles
+} from "lucide-react";
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
 
       {/* Navbar */}
-      <nav className="flex justify-between items-center px-10 py-5 border-b">
-        <h1 className="text-2xl font-bold text-blue-900">
+      <nav className="sticky top-0 z-50 flex justify-between items-center px-12 py-6 bg-white shadow-sm">
+        <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight">
           SpeedFix
         </h1>
 
-        <div className="space-x-6 hidden md:flex items-center">
-          <a href="#" className="hover:text-blue-700 transition">Services</a>
-          <a href="#" className="hover:text-blue-700 transition">How It Works</a>
-          <a href="#" className="hover:text-blue-700 transition">Cities</a>
-          <a href="#" className="hover:text-blue-700 transition">About</a>
-          <a href="/founder" className="text-sm text-gray-600 hover:text-blue-700 transition">
-            Founder Login
-          </a>
+        <div className="hidden md:flex space-x-8 items-center font-medium">
+          <a href="#" className="hover:text-red-600 transition">Services</a>
+          <a href="#" className="hover:text-red-600 transition">Cities</a>
+          <a href="#" className="hover:text-red-600 transition">About</a>
         </div>
 
-        <button className="bg-teal-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-teal-700 transition">
+        <button className="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition shadow-md">
           Book Service
         </button>
       </nav>
 
 
-      {/* Hero Section */}
-      <section className="text-center py-24 px-6">
-        <h2 className="text-5xl font-bold text-blue-900 leading-tight mb-6">
-          Smart On-Demand Services.
-          <br /> Delivered Nationwide.
+      {/* Hero */}
+      <section className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-12 py-32 text-center">
+        <h2 className="text-6xl font-extrabold leading-tight mb-6">
+          India’s Smart Home <br /> Service Platform
         </h2>
 
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-          Verified technicians. Transparent pricing. Fast response.
-          Experience a premium service marketplace built for modern India.
+        <p className="text-lg opacity-90 max-w-2xl mx-auto mb-10">
+          Verified professionals. Fast response. Transparent pricing.
         </p>
 
-        <div className="space-x-4">
-          <button className="bg-blue-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-800 transition">
-            Book a Service
-          </button>
-
-          <button className="border border-blue-900 text-blue-900 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition">
-            Explore Services
-          </button>
-        </div>
+        <button className="bg-red-600 px-10 py-4 rounded-xl font-semibold text-lg hover:bg-red-700 transition shadow-lg">
+          Book a Service
+        </button>
       </section>
 
 
-      {/* Services Section */}
-      <section className="px-10 py-20 bg-gray-50">
-        <h3 className="text-3xl font-bold text-center text-blue-900 mb-12">
+      {/* Services */}
+      <section className="px-12 py-24 bg-white">
+        <h3 className="text-4xl font-bold text-center text-blue-900 mb-16">
           Our Services
         </h3>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-12">
+
           {[
-            "AC Repair",
-            "Electrician",
-            "Plumbing",
-            "Appliance Repair",
-            "CCTV Installation",
-            "Cleaning Services"
-          ].map((service) => (
-            <div
-              key={service}
-              className="bg-white p-8 rounded-xl shadow-sm border hover:shadow-md transition"
-            >
-              <h4 className="text-xl font-semibold mb-3 text-blue-900">
-                {service}
-              </h4>
-              <p className="text-gray-600 text-sm">
-                Professional, verified technicians with transparent pricing
-                and fast response times.
-              </p>
-            </div>
-          ))}
+            { name: "AC Repair", icon: Wrench },
+            { name: "Electrician", icon: Zap },
+            { name: "Plumbing", icon: Droplets },
+            { name: "Appliance Repair", icon: ShieldCheck },
+            { name: "CCTV Installation", icon: Camera },
+            { name: "Deep Cleaning", icon: Sparkles },
+          ].map((service) => {
+            const Icon = service.icon;
+
+            return (
+              <div
+                key={service.name}
+                className="bg-white p-10 rounded-2xl shadow-sm border hover:shadow-xl hover:-translate-y-1 transition duration-300 text-center"
+              >
+                <div className="flex justify-center mb-6">
+                  <div className="bg-blue-100 p-4 rounded-xl">
+                    <Icon size={32} className="text-blue-900" />
+                  </div>
+                </div>
+
+                <h4 className="text-xl font-semibold text-blue-900 mb-3">
+                  {service.name}
+                </h4>
+
+                <p className="text-gray-600 text-sm">
+                  Certified technicians with quality assurance and fair pricing.
+                </p>
+              </div>
+            );
+          })}
+
         </div>
       </section>
 
 
       {/* Trust Section */}
-      <section className="py-20 px-6 text-center">
-        <h3 className="text-3xl font-bold text-blue-900 mb-12">
+      <section className="bg-blue-900 text-white py-24 text-center">
+        <h3 className="text-4xl font-bold mb-16">
           Trusted Nationwide
         </h3>
 
-        <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-10 max-w-6xl mx-auto px-6">
           <div>
-            <p className="text-4xl font-bold text-teal-600">10,000+</p>
-            <p className="text-gray-600">Services Completed</p>
+            <p className="text-5xl font-extrabold text-red-400">10K+</p>
+            <p className="opacity-80 mt-2">Services Completed</p>
           </div>
 
           <div>
-            <p className="text-4xl font-bold text-teal-600">500+</p>
-            <p className="text-gray-600">Verified Technicians</p>
+            <p className="text-5xl font-extrabold text-red-400">500+</p>
+            <p className="opacity-80 mt-2">Verified Technicians</p>
           </div>
 
           <div>
-            <p className="text-4xl font-bold text-teal-600">25+</p>
-            <p className="text-gray-600">Cities Covered</p>
+            <p className="text-5xl font-extrabold text-red-400">25+</p>
+            <p className="opacity-80 mt-2">Cities Covered</p>
           </div>
 
           <div>
-            <p className="text-4xl font-bold text-teal-600">4.8★</p>
-            <p className="text-gray-600">Customer Rating</p>
+            <p className="text-5xl font-extrabold text-red-400">4.8★</p>
+            <p className="opacity-80 mt-2">Customer Rating</p>
           </div>
         </div>
       </section>
 
 
       {/* Footer */}
-      <footer className="bg-blue-900 text-white py-10 text-center">
-        <p className="font-semibold text-lg mb-2">SpeedFix</p>
-        <p className="text-sm opacity-80">
+      <footer className="bg-white border-t py-12 text-center">
+        <h4 className="text-2xl font-bold text-blue-900 mb-3">
+          SpeedFix
+        </h4>
+        <p className="text-sm text-gray-600">
           © {new Date().getFullYear()} SpeedFix. All rights reserved.
         </p>
       </footer>
