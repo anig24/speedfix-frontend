@@ -354,11 +354,11 @@ const handleSubmit = async () => {
         <div className="max-w-7xl mx-auto px-6 text-center">
 
           <h2 className="text-3xl font-bold">
-            24x7 Support
+            Stay Tuned With Us
           </h2>
 
           <p className="mt-4 text-gray-300">
-            Our team is always available to assist you with bookings and service queries.
+            © 2026 SpeedFix.co.in All rights reserved.
           </p>
 
         </div>
