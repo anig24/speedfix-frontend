@@ -1,9 +1,10 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import Providers from "./providers";
+import Navbar from "./components/Navbar";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "SpeedFix - Smart Home Services",
-  description: "Professional home services delivered by verified experts.",
+  description: "Book trusted home services near you",
 };
 
 export default function RootLayout({
@@ -13,28 +14,65 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 text-gray-900">
+      <body className="bg-white text-gray-900">
+        <Providers>
 
-        {/* Top Branding Bar */}
-        <div className="bg-[#0B1F3A] py-3">
-          <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-            
-            <h1 className="text-xl font-bold tracking-wide">
-              <span className="text-white">Speed</span>
-              <span className="text-orange-500">Fix</span>
-            </h1>
+          {/* Navbar */}
+          <Navbar />
 
-            {/* Optional Right Side (can remove later) */}
-            <div className="text-sm text-gray-300">
-              24x7 Live Chat Support
+          {/* Page Content */}
+          <div className="pt-[48px]">
+            {children}
+          </div>
+
+          {/* Footer */}
+          <footer className="bg-gray-950 text-gray-400 pt-16 pb-10 mt-24">
+            <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 text-sm">
+              <div>
+                <h4 className="text-white font-semibold mb-4">Services</h4>
+                <ul className="space-y-3">
+                  <li>Electrician</li>
+                  <li>Plumbing</li>
+                  <li>AC Service</li>
+                  <li>Home Cleaning</li>
+                  <li>Appliance Repair</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-white font-semibold mb-4">Company</h4>
+                <ul className="space-y-3">
+                  <li>About Us</li>
+                  <li>Careers</li>
+                  <li>Blog</li>
+                  <li>Partner With Us</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-white font-semibold mb-4">Support</h4>
+                <ul className="space-y-3">
+                  <li>Help Center</li>
+                  <li>Safety</li>
+                  <li>Cancellation Policy</li>
+                  <li>Contact Us</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-white font-semibold mb-4">Contact Us</h4>
+                <p>Email: support@speedfix.co.in</p>
+                <p className="mt-2">Phone: +91 7439769525</p>
+                <p className="mt-2">India</p>
+              </div>
             </div>
 
-          </div>
-        </div>
+            <div className="border-t border-gray-800 mt-12 pt-6 text-center text-xs text-gray-500">
+              © 2026 SpeedFix.co.in. All rights reserved.
+            </div>
+          </footer>
 
-        {/* Main Page Content */}
-        <main>{children}</main>
-
+        </Providers>
       </body>
     </html>
   );
