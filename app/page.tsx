@@ -100,7 +100,7 @@ export default function Home() {
 
           <Link href="/services/electrician" className="flex items-center gap-3 group">
             <div className="w-14 h-14 flex items-center justify-center rounded-full bg-white shadow group-hover:bg-orange-500 transition">
-              <FaBolt className="text-xl text-yellow-500 group-hover:text-white" />
+              <FaBolt className="text-xl text-blue-600 group-hover:text-white" />
             </div>
             <span className="font-medium text-gray-900">Electrical</span>
           </Link>
@@ -120,24 +120,23 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Buttons */}
-        <div className="flex gap-5">
-          <button
-            onClick={handleSecureRedirect}
-            disabled={loading}
-            className="px-8 py-4 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition shadow-md"
-          >
-            {loading ? "Securing..." : "Book a Service"}
-          </button>
 
-          <button
-            onClick={handleSecureRedirect}
-            disabled={loading}
-            className="px-8 py-4 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition shadow-md"
-          >
-            {loading ? "Securing..." : "Instant Booking"}
-          </button>
-        </div>
+{/* Buttons */}
+<div className="flex gap-5">
+  <button
+    onClick={() => router.push("/services")}
+    className="px-8 py-4 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition shadow-md hover:scale-105 active:scale-95 duration-200"
+  >
+    Book a Service
+  </button>
+
+  <button
+    onClick={() => router.push("/login")}
+    className="px-8 py-4 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition shadow-md hover:scale-105 active:scale-95 duration-200"
+  >
+    Instant Booking
+  </button>
+</div>
 
       </div>
 

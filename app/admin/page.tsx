@@ -1,57 +1,61 @@
 "use client";
 
-import { useState } from "react";
-import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-export default function AdminLogin() {
-  const router = useRouter();
+export default function AdminDashboard() {
+  const [usersCount, setUsersCount] = useState(0);
+  const [bookingsCount, setBookingsCount] = useState(0);
+  const [techniciansCount, setTechniciansCount] = useState(0);
+  const [citiesCount, setCitiesCount] = useState(0);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  useEffect(() => {
+    const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
+      setUsersCount(snap.size);
+    });
 
-  const handleLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("Login Successful ✅");
-      router.push("/dashboard");
-    } catch (error) {
-      alert("Invalid credentials ❌");
-      console.error(error);
-    }
-  };
+    const unsubBookings = onSnapshot(collection(db, "bookings"), (snap) => {
+      setBookingsCount(snap.size);
+    });
+
+    const unsubTechnicians = onSnapshot(collection(db, "technicians"), (snap) => {
+      setTechniciansCount(snap.size);
+    });
+
+    const unsubCities = onSnapshot(collection(db, "cities"), (snap) => {
+      setCitiesCount(snap.size);
+    });
+
+    return () => {
+      unsubUsers();
+      unsubBookings();
+      unsubTechnicians();
+      unsubCities();
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="space-y-8">
 
-      <div className="bg-white p-10 rounded-xl shadow-lg w-full max-w-md">
+      <h2 className="text-2xl font-bold">Company Overview</h2>
 
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Admin Login
-        </h2>
-
-        <input
-          className="border w-full p-3 rounded-lg mb-4"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <input
-          type="password"
-          className="border w-full p-3 rounded-lg mb-6"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <button
-          onClick={handleLogin}
-          className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600"
-        >
-          Login
-        </button>
-
+      <div className="grid md:grid-cols-4 gap-6">
+        <Card title="Total Users" value={usersCount} />
+        <Card title="Total Bookings" value={bookingsCount} />
+        <Card title="Total Technicians" value={techniciansCount} />
+        <Card title="Active Cities" value={citiesCount} />
       </div>
+
+    </div>
+  );
+}
+
+function Card({ title, value }: { title: string; value: number }) {
+  return (
+    <div className="bg-white p-6 rounded-xl shadow">
+      <p className="text-gray-500 text-sm">{title}</p>
+      <h3 className="text-2xl font-bold mt-2">{value}</h3>
     </div>
   );
 }

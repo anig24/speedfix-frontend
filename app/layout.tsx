@@ -1,6 +1,7 @@
 import "./globals.css";
 import Providers from "./providers";
 import Navbar from "./components/Navbar";
+import Script from "next/script";
 
 export const metadata = {
   title: "SpeedFix - Smart Home Services",
@@ -15,17 +16,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-white text-gray-900">
-        <Providers>
 
-          {/* Navbar */}
+        {/* ✅ Load reCAPTCHA v3 properly */}
+        <Script
+          src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+          strategy="afterInteractive"
+        />
+
+        <Providers>
           <Navbar />
 
-          {/* Page Content */}
           <div className="pt-[48px]">
             {children}
           </div>
 
-          {/* Footer */}
           <footer className="bg-gray-950 text-gray-400 pt-16 pb-10 mt-24">
             <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 text-sm">
               <div>
@@ -71,7 +75,6 @@ export default function RootLayout({
               © 2026 SpeedFix.co.in. All rights reserved.
             </div>
           </footer>
-
         </Providers>
       </body>
     </html>
