@@ -2,94 +2,64 @@
 
 import { useEffect, useState } from "react";
 
-export default function CitySection() {
-  const [detectedCity, setDetectedCity] = useState("Detecting...");
+export default function CitySection({ onSelect }: { onSelect?: () => void }) {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
-
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-          );
-          const data = await res.json();
-
-          const city =
-            data.address.city ||
-            data.address.town ||
-            data.address.state ||
-            "Your City";
-
-          setDetectedCity(city);
-        } catch {
-          setDetectedCity("Location unavailable");
-        }
-      });
-    } else {
-      setDetectedCity("Geolocation not supported");
-    }
+    const savedCity = localStorage.getItem("city");
+    if (savedCity) setSelectedCity(savedCity);
   }, []);
 
   const cities = [
     { name: "Mumbai", image: "/cities/mumbai.png" },
     { name: "Delhi", image: "/cities/delhi.png" },
-    { name: "bangalore", image: "/cities/bangalore.png" },
+    { name: "Bangalore", image: "/cities/bangalore.png" },
     { name: "Kolkata", image: "/cities/kolkata.png" },
     { name: "Chennai", image: "/cities/chennai.png" },
-    { name: "hyderabad", image: "/cities/hyderabad.png" },
+    { name: "Hyderabad", image: "/cities/hyderabad.png" },
   ];
 
+const handleSelect = (city: string) => {
+  setSelectedCity(city);
+  localStorage.setItem("city", city);
+
+  if (onSelect) onSelect();
+
+  window.location.reload(); // 
+};
+
   return (
+    <div className="p-4 grid grid-cols-3 gap-4">
+      {cities.map((city) => {
+        const isActive = selectedCity === city.name;
 
-<section className="py-32 bg-gradient-to-b from-white to-gray-50">
-    <div className="max-w-7xl mx-auto px-6">
+        return (
+          <div
+            key={city.name}
+            onClick={() => handleSelect(city.name)}
+            className={`cursor-pointer rounded-lg p-4 text-center transition
+              ${
+                isActive
+                  ? "bg-[#FF6A00]/20 border border-[#FF6A00]"
+                  : "bg-white/5 border border-white/10 hover:bg-white/10"
+              }`}
+          >
+            <img
+              src={city.image}
+              alt={city.name}
+              className="h-16 mx-auto mb-2 object-contain"
+            />
 
-      <h2 className="text-4xl font-bold text-[#0B1F3B] mb-6">
-        Available in Top Cities
-      </h2>
-
-      <p className="text-gray-600 mb-16">
-        📍 Delivering services in{" "}
-        <span className="font-semibold text-orange-500">
-          {detectedCity}
-        </span>
-      </p>
-
-      <div className="grid md:grid-cols-3 gap-y-20 gap-x-16 items-end">
-
-  {cities.map((city) => {
-    const isActive = selectedCity === city.name;
-
-    return (
-      <div
-        key={city.name}
-        onClick={() => setSelectedCity(city.name)}
-        className={`text-center cursor-pointer transition-all duration-300 rounded-2xl p-6
-${isActive ? "bg-orange-50 border-2 border-orange-500 scale-105" : "hover:bg-orange-50"}`}
-      >
-        <img
-          src={city.image}
-          alt={city.name}
-          className={`mx-auto h-52 object-contain transition duration-300 
-          `}
-        />
-
-        <h3
-          className={`mt-6 text-xl font-semibold transition 
-          ${isActive ? "text-orange-600" : "text-[#0B1F3B]"}`}
-        >
-          {city.name}
-        </h3>
-      </div>
-    );
-  })}
-
-</div>
-
+            <p
+              className={`text-sm font-medium ${
+                isActive ? "text-[#FF6A00]" : "text-white"
+              }`}
+            >
+              {city.name}
+            </p>
+          </div>
+        );
+      })}
     </div>
-  </section>
-);
+  );
 }

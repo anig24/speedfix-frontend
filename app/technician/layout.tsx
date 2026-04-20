@@ -6,29 +6,17 @@ export default function TechnicianLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-gray-100">
-        <div className="min-h-screen flex flex-col">
-          
-          {/* Header */}
-          <header className="bg-blue-600 text-white p-4 shadow-md">
-            <h1 className="text-xl font-bold">
-              Technician Dashboard
-            </h1>
-          </header>
+    <div className="min-h-screen bg-gray-100 text-slate-900">
+      <header className="bg-blue-600 p-4 text-white shadow-md">
+        <h1 className="text-xl font-bold">Technician Dashboard</h1>
+      </header>
 
-          {/* Main Content */}
-          <main className="flex-1 p-6">
-            {children}
-          </main>
+      <main className="p-6">{children}</main>
 
-          {/* Footer */}
-          <footer className="bg-gray-200 text-center p-3 text-sm">
-            © {new Date().getFullYear()} SpeedFix Pvt Ltd. All rights reserved.
-          </footer>
-
-        </div>
-      </body>
-    </html>
+      <footer className="bg-gray-200 p-3 text-center text-sm">
+        Copyright {new Date().getFullYear()} SpeedFix Pvt Ltd. All rights
+        reserved.
+      </footer>
+    </div>
   );
 }

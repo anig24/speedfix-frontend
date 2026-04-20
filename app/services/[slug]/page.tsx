@@ -1,243 +1,258 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
-type ServiceType = {
-  title: string;
-  basePrice: number;
-  description: string;
-};
-
-const services: Record<string, ServiceType> = {
-  electrician: {
-    title: "Professional Electrician Service",
-    basePrice: 149,
-    description:
-      "Certified electricians for wiring, installations, repairs and maintenance.",
-  },
-  plumbing: {
-    title: "Reliable Plumbing Service",
-    basePrice: 149,
-    description:
-      "Leak fixes, pipe repairs, bathroom fittings and more.",
-  },
-  cleaning: {
-    title: "Deep Home Cleaning",
-    basePrice: 499,
-    description:
-      "Complete home cleaning with professional equipment.",
-  },
-  ac_service: {
-    title: "AC Repair & Maintenance",
-    basePrice: 299,
-    description:
-      "Gas refill, servicing, installation and repair by certified technicians.",
-  },
-};
-
-const loadRazorpayScript = () =>
-  new Promise<boolean>((resolve) => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
+import { ArrowRight, BadgeCheck, CalendarDays, Clock3, Star } from "lucide-react";
+import { getServiceBySlug, ServiceCatalogItem } from "@/lib/serviceCatalog";
 
 export default function ServicePage() {
-  const { slug } = useParams();
-  const router = useRouter();
-
-  const service = services[slug as string];
-
-  const [user, setUser] = useState<any>(null);
-  const [city, setCity] = useState("");
-  const [pincode, setPincode] = useState("");
-  const [slot, setSlot] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
-    return () => unsubscribe();
-  }, []);
+  const params = useParams<{ slug: string }>();
+  const service = getServiceBySlug(String(params.slug || ""));
 
   if (!service) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-2xl font-bold">Service Not Found</h1>
+      <div className="bg-[#f6efe4] px-6 py-20 text-slate-900">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+          <h1 className="text-3xl font-semibold text-slate-950">
+            Service not found
+          </h1>
+          <p className="mt-4 text-slate-600">
+            That service slug does not exist in the shared catalog yet.
+          </p>
+          <Link
+            href="/services"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            Back to services
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const slots = [
-    "9:00 AM - 11:00 AM",
-    "11:00 AM - 1:00 PM",
-    "2:00 PM - 4:00 PM",
-    "4:00 PM - 6:00 PM",
-    "6:00 PM - 8:00 PM",
-  ];
+  return <ServiceDetailView key={service.slug} service={service} />;
+}
 
-  const handleBooking = async () => {
-    if (!user) {
-      router.push(`/login?redirect=/services/${slug}`);
-      return;
-    }
+function ServiceDetailView({ service }: { service: ServiceCatalogItem }) {
+  const router = useRouter();
+  const [selectedPackageName, setSelectedPackageName] = useState(
+    service.packages[1]?.name || service.packages[0].name
+  );
+  const [addons, setAddons] = useState<string[]>([]);
 
-    if (!city || !pincode || !slot) {
-      alert("Please complete all booking details");
-      return;
-    }
+  const selectedPackage =
+    service.packages.find((item) => item.name === selectedPackageName) ||
+    service.packages[0];
 
-    if (pincode.length !== 6) {
-      alert("Enter valid 6-digit pincode");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const sdkLoaded = await loadRazorpayScript();
-      if (!sdkLoaded) {
-        alert("Payment SDK failed");
-        return;
-      }
-
-      const orderRes = await fetch("/api/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: service.basePrice }),
-      });
-
-      const order = await orderRes.json();
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: order.amount,
-        currency: order.currency,
-        order_id: order.id,
-        name: "SpeedFix",
-        description: service.title,
-        handler: async function (response: any) {
-          const verifyRes = await fetch("/api/verify-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              bookingData: {
-                userId: user.uid,
-                service: slug,
-                city,
-                pincode,
-                slot,
-                amount: service.basePrice,
-              },
-            }),
-          });
-
-          const data = await verifyRes.json();
-
-          if (data.success) {
-            router.push("/dashboard");
-          } else {
-            alert("Payment verification failed");
-          }
-        },
-        theme: { color: "#f97316" },
-      };
-
-      new window.Razorpay(options).open();
-    } catch (error) {
-      console.error(error);
-      alert("Booking failed");
-    } finally {
-      setLoading(false);
-    }
+  const toggleAddon = (addon: string) => {
+    setAddons((current) =>
+      current.includes(addon)
+        ? current.filter((item) => item !== addon)
+        : [...current, addon]
+    );
   };
 
+  const total =
+    selectedPackage.price +
+    service.addons
+      .filter((addon) => addons.includes(addon.name))
+      .reduce((sum, addon) => sum + addon.price, 0);
+
   return (
-    <section className="min-h-screen bg-gray-100 py-14 px-6">
-      <div className="max-w-5xl mx-auto space-y-10">
+    <div className="bg-[#f6efe4] text-slate-900">
+      <section className="mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-16">
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="space-y-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+              {service.name}
+            </p>
+            <h1 className="display-font text-5xl leading-tight text-slate-950">
+              {service.tagline}
+            </h1>
+            <p className="max-w-2xl text-base leading-8 text-slate-600">
+              {service.description}
+            </p>
 
-        {/* Service Info */}
-        <div className="bg-white rounded-2xl shadow-lg p-10">
-          <h1 className="text-4xl font-bold mb-4">{service.title}</h1>
-          <p className="text-gray-600 mb-6">{service.description}</p>
-          <div className="text-2xl font-semibold text-orange-500">
-            ₹{service.basePrice}
-          </div>
-        </div>
+            <div className="flex flex-wrap gap-3 text-sm text-slate-500">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white px-4 py-2">
+                <Star className="h-4 w-4 fill-orange-400 text-orange-400" />
+                {service.rating}
+              </span>
+              <span className="rounded-full bg-white px-4 py-2">
+                {service.reviews}
+              </span>
+              <span className="rounded-full bg-white px-4 py-2">
+                {service.jobsCompleted}
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2">
+                <Clock3 className="h-4 w-4 text-orange-500" />
+                {service.responseTime}
+              </span>
+            </div>
 
-        {/* Booking Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-10 space-y-8">
+            <div className="relative h-[22rem] overflow-hidden rounded-[2rem]">
+              <Image
+                src={service.image}
+                alt={service.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 60vw"
+                className="object-cover"
+              />
+            </div>
 
-          {/* City */}
-          <div>
-            <label className="font-semibold block mb-2">Select City</label>
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full border rounded-lg p-3"
-            >
-              <option value="">Choose City</option>
-              <option value="Kolkata">Kolkata</option>
-              <option value="Howrah">Howrah</option>
-              <option value="Delhi">Delhi</option>
-              <option value="Mumbai">Mumbai</option>
-            </select>
-          </div>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="rounded-[2rem] border border-slate-200 bg-white p-6">
+                <h2 className="text-xl font-semibold text-slate-950">
+                  Common problems solved
+                </h2>
+                <div className="mt-4 space-y-3">
+                  {service.problemsSolved.map((problem) => (
+                    <div
+                      key={problem}
+                      className="flex items-start gap-2 text-sm leading-7 text-slate-600"
+                    >
+                      <BadgeCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-500" />
+                      {problem}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          {/* Pincode */}
-          <div>
-            <label className="font-semibold block mb-2">Enter Pincode</label>
-            <input
-              type="number"
-              value={pincode}
-              onChange={(e) => setPincode(e.target.value)}
-              placeholder="6-digit pincode"
-              className="w-full border rounded-lg p-3"
-            />
-          </div>
-
-          {/* Slot Selection */}
-          <div>
-            <label className="font-semibold block mb-4">Select Time Slot</label>
-            <div className="grid md:grid-cols-2 gap-4">
-              {slots.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSlot(s)}
-                  className={`border p-4 rounded-lg ${
-                    slot === s
-                      ? "bg-orange-500 text-white"
-                      : "hover:border-orange-500"
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
+              <div className="rounded-[2rem] border border-slate-200 bg-white p-6">
+                <h2 className="text-xl font-semibold text-slate-950">
+                  Why customers book this
+                </h2>
+                <div className="mt-4 space-y-3">
+                  {service.highlights.map((highlight) => (
+                    <div
+                      key={highlight}
+                      className="flex items-start gap-2 text-sm leading-7 text-slate-600"
+                    >
+                      <BadgeCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-500" />
+                      {highlight}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Book Button */}
-          <button
-            onClick={handleBooking}
-            disabled={loading}
-            className="w-full bg-orange-500 text-white py-4 rounded-lg text-lg hover:bg-orange-600 transition disabled:opacity-50"
-          >
-            {loading ? "Processing..." : "Confirm & Pay"}
-          </button>
+          <div className="space-y-6">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+                    Packages
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                    Pick the right visit type
+                  </h2>
+                </div>
+                <div className="rounded-full bg-[#fff5ea] px-4 py-2 text-sm font-medium text-orange-600">
+                  Starts at Rs. {service.basePrice}
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-4">
+                {service.packages.map((pkg) => (
+                  <button
+                    key={pkg.name}
+                    type="button"
+                    onClick={() => setSelectedPackageName(pkg.name)}
+                    className={`w-full rounded-[1.6rem] border p-5 text-left transition ${
+                      selectedPackage.name === pkg.name
+                        ? "border-slate-900 bg-slate-950 text-white"
+                        : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl font-semibold">{pkg.name}</h3>
+                        <p className="mt-2 text-sm leading-7 opacity-80">
+                          {pkg.description}
+                        </p>
+                      </div>
+                      <p className="rounded-full bg-white/15 px-3 py-2 text-sm font-medium">
+                        Rs. {pkg.price}
+                      </p>
+                    </div>
+                    <div className="mt-4 inline-flex items-center gap-2 text-sm opacity-80">
+                      <CalendarDays className="h-4 w-4" />
+                      {pkg.turnaround}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+              <h2 className="text-2xl font-semibold text-slate-950">
+                Add-ons
+              </h2>
+              <div className="mt-5 space-y-3">
+                {service.addons.map((addon) => (
+                  <button
+                    key={addon.name}
+                    type="button"
+                    onClick={() => toggleAddon(addon.name)}
+                    className={`flex w-full items-center justify-between rounded-[1.4rem] border px-4 py-4 text-left transition ${
+                      addons.includes(addon.name)
+                        ? "border-slate-900 bg-slate-950 text-white"
+                        : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300"
+                    }`}
+                  >
+                    <span className="text-sm font-medium">{addon.name}</span>
+                    <span className="text-sm">Rs. {addon.price}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-slate-200 bg-slate-950 p-6 text-white shadow-[0_24px_70px_rgba(15,23,42,0.12)]">
+              <h2 className="text-2xl font-semibold">Booking summary</h2>
+              <div className="mt-5 space-y-3 text-sm text-slate-300">
+                <p>Package: {selectedPackage.name}</p>
+                <p>Add-ons selected: {addons.length}</p>
+                <p>Coverage: {service.coverage}</p>
+                <p>Expected turnaround: {selectedPackage.turnaround}</p>
+              </div>
+
+              <div className="mt-6 rounded-[1.5rem] bg-white/5 p-4">
+                <p className="text-sm text-slate-300">Estimated total</p>
+                <p className="mt-2 text-3xl font-semibold text-white">
+                  Rs. {total}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/checkout?service=${encodeURIComponent(
+                      service.slug
+                    )}&total=${total}`
+                  )
+                }
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-4 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+              >
+                Continue to checkout
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+              <Link
+                href="/#lead-form"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-white/15 px-5 py-4 text-sm font-semibold text-white transition hover:border-white/30"
+              >
+                Use quick request instead
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

@@ -56,7 +56,7 @@ export default function CitiesPage() {
         const offices = data[0].PostOffice;
 
         const uniquePins = [
-          ...new Set(offices.map((po: any) => po.Pincode)),
+          ...new Set<string>(offices.map((po: { Pincode: string }) => po.Pincode)),
         ];
 
         setStateName(offices[0].State);
@@ -81,7 +81,7 @@ export default function CitiesPage() {
         const offices = data[0].PostOffice;
 
         const uniquePins = [
-          ...new Set(offices.map((po: any) => po.Pincode)),
+          ...new Set<string>(offices.map((po: { Pincode: string }) => po.Pincode)),
         ];
 
         setCityInput(offices[0].District);

@@ -1,22 +1,125 @@
+/* ✅ MUST BE FIRST */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth fade animation */
-@keyframes fadeIn {
+/* =========================
+   Luxury Typography System
+========================= */
+
+:root {
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+
+  --color-navy: #0F172A;
+  --color-accent: #FF6A00;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-navy);
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headline luxury serif */
+.display-font {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* =========================
+   Cinematic Fade Animation
+========================= */
+
+@keyframes fadeInLuxury {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: translateY(40px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
+.animate-fadeLuxury {
+  animation: fadeInLuxury 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* =========================
+   Subtle Noise Overlay
+========================= */
+
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  z-index: 50;
+}
+
+/* =========================
+   Cinematic Parallax Helpers
+========================= */
+
+.parallax-slow {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* =========================
+   Smooth Image Zoom Hover
+========================= */
+
+.img-zoom {
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.img-zoom:hover {
+  transform: scale(1.06);
+}
+
+/* =========================
+   Elegant Button Motion
+========================= */
+
+.luxury-button {
+  transition: all 0.3s ease;
+  letter-spacing: 0.08em;
+}
+
+.luxury-button:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/* =========================
+   Scrollbar Minimal Styling
+========================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* reCAPTCHA scale */
 .grecaptcha-badge {
   transform: scale(0.75);
   transform-origin: bottom right;
