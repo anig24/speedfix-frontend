@@ -163,7 +163,7 @@ export default function HomePage() {
                 </p>
                 <h1 className="display-font max-w-3xl text-5xl leading-tight text-slate-950 md:text-6xl">
                   A proper service homepage for {form.city || "your city"} with
-                  Urban Company style discovery and a stronger lead backend.
+                  SpeedFix Company style discovery.
                 </h1>
                 <p className="max-w-2xl text-lg leading-8 text-slate-600">
                   Browse trusted categories, see pricing entry points, and send
