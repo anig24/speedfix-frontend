@@ -1,80 +1,97 @@
-export default function PrivacyPolicy() {
+const privacySections = [
+  {
+    title: "Information we collect",
+    body: [
+      "We may collect your name, phone number, email address, service address, city, pincode, and booking details.",
+      "If you use optional location features, city and pincode can also be used to improve service discovery and checkout.",
+    ],
+  },
+  {
+    title: "How we use your information",
+    body: [
+      "To process bookings, connect customers with service partners, and provide status updates.",
+      "To improve pricing, category discovery, customer support, and service quality.",
+    ],
+  },
+  {
+    title: "Payments",
+    body: [
+      "Online payments are processed through Razorpay. SpeedFix does not store full card or bank credentials.",
+      "Payment-related data is used only to confirm bookings, support refunds when applicable, and maintain transaction records.",
+    ],
+  },
+  {
+    title: "Third-party services",
+    body: [
+      "We rely on trusted services such as Firebase for app infrastructure and Razorpay for payment processing.",
+      "These partners follow their own security and privacy practices for the services they provide.",
+    ],
+  },
+  {
+    title: "Your rights",
+    body: [
+      "You can request correction or deletion of personal data by reaching out to our support team.",
+      "For privacy questions, contact support@speedfix.co.in.",
+    ],
+  },
+];
+
+export default function PrivacyPolicyPage() {
   return (
-    <div className="max-w-4xl mx-auto p-6 text-gray-800">
-      <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
+    <div className="bg-[#f6efe4] text-slate-900">
+      <section className="border-b border-slate-200/80">
+        <div className="mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-20">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Privacy policy
+          </p>
+          <h1 className="mt-4 display-font text-5xl text-slate-950 md:text-6xl">
+            How SpeedFix handles customer information
+          </h1>
+          <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
+            This page explains what information we collect, why we use it, and
+            how booking, checkout, and communication details are handled on the
+            platform.
+          </p>
+        </div>
+      </section>
 
-      <p className="mb-4">
-        Welcome to SpeedFix. We are committed to protecting your privacy and
-        ensuring transparency in how we collect and use your information.
-      </p>
+      <section className="mx-auto max-w-6xl px-6 py-16 lg:px-8">
+        <div className="grid gap-6 md:grid-cols-2">
+          {privacySections.map((section) => (
+            <article
+              key={section.title}
+              className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card"
+            >
+              <h2 className="text-2xl font-semibold text-slate-950">
+                {section.title}
+              </h2>
+              <div className="mt-4 space-y-3">
+                {section.body.map((item) => (
+                  <p key={item} className="text-sm leading-7 text-slate-600">
+                    {item}
+                  </p>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
 
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        1. Information We Collect
-      </h2>
-      <ul className="list-disc ml-6 mb-4">
-        <li>Full name</li>
-        <li>Email address</li>
-        <li>Phone number</li>
-        <li>Service address</li>
-        <li>Location data (if enabled)</li>
-        <li>Booking details and service history</li>
-      </ul>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        2. How We Use Your Information
-      </h2>
-      <ul className="list-disc ml-6 mb-4">
-        <li>To connect customers with technicians and service providers</li>
-        <li>To process service bookings</li>
-        <li>To improve user experience</li>
-        <li>To send booking confirmations and updates</li>
-        <li>To provide customer support</li>
-      </ul>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        3. Payment Processing
-      </h2>
-      <p className="mb-4">
-        All payments on SpeedFix are securely processed through Razorpay.
-        SpeedFix does not store your full card details or banking information.
-        Transactions are encrypted and handled by Razorpay's secure payment
-        infrastructure.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        4. Third-Party Services
-      </h2>
-      <p className="mb-4">
-        We use trusted third-party services such as Firebase (authentication
-        and backend services) and Razorpay (payment processing). These
-        providers follow industry-standard security practices.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        5. Data Protection
-      </h2>
-      <p className="mb-4">
-        We implement appropriate technical and organizational measures to
-        protect your personal data from unauthorized access, misuse, or
-        disclosure.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        6. User Rights
-      </h2>
-      <p className="mb-4">
-        You may request access, correction, or deletion of your personal data
-        by contacting us at the email provided below.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        7. Contact Information
-      </h2>
-      <p>
-        For any privacy-related questions, contact us at:
-        <br />
-        <strong>support@speedfix.co.in</strong>
-      </p>
+        <div className="mt-8 rounded-[2rem] border border-slate-200 bg-slate-950 p-6 text-white premium-card">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Contact
+          </p>
+          <p className="mt-3 text-base leading-8 text-slate-300">
+            For privacy-related questions or requests, email{" "}
+            <a
+              href="mailto:support@speedfix.co.in"
+              className="font-semibold text-white underline underline-offset-4"
+            >
+              support@speedfix.co.in
+            </a>
+            .
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

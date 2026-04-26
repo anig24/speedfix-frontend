@@ -1,24 +1,57 @@
 import "./globals.css";
-import Providers from "./providers";
-import Navbar from "./components/Navbar";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import Navbar from "./components/Navbar";
+import Providers from "./providers";
 
-export const metadata = {
-  title: "SpeedFix - Smart Home Services",
-  description: "Book trusted home services near you",
+export const metadata: Metadata = {
+  title: "SpeedFix | Premium Home Services",
+  description:
+    "Book premium home services with transparent packages, subcategories, cart checkout, and secure payments.",
 };
+
+const serviceLinks = [
+  {
+    label: "Full home deep cleaning",
+    href: "/services/cleaning/full-home-deep-cleaning",
+  },
+  {
+    label: "Switchboard repairs",
+    href: "/services/electrician/switchboard-repairs",
+  },
+  {
+    label: "Leak repair",
+    href: "/services/plumbing/leak-repair",
+  },
+  {
+    label: "Split AC service",
+    href: "/services/ac-service/split-ac-service",
+  },
+];
+
+const companyLinks = [
+  { label: "About", href: "/about" },
+  { label: "Careers", href: "/careers" },
+  { label: "Contact", href: "/contact" },
+  { label: "Terms", href: "/terms" },
+];
+
+const customerLinks = [
+  { label: "All services", href: "/services" },
+  { label: "Cart", href: "/cart" },
+  { label: "Checkout", href: "/checkout" },
+  { label: "Privacy policy", href: "/privacy-policy" },
+];
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className="bg-[#0F172A] text-white antialiased">
-
-        {/* reCAPTCHA (safe load) */}
+      <body className="antialiased">
         {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
           <Script
             src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
@@ -26,7 +59,6 @@ export default function RootLayout({
           />
         )}
 
-        {/* Razorpay */}
         <Script
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="lazyOnload"
@@ -35,116 +67,75 @@ export default function RootLayout({
         <Providers>
           <Navbar />
 
-          {/* MAIN */}
-          <main className="pt-[60px] min-h-screen">
-            {children}
-          </main>
+          <main className="min-h-screen pt-16">{children}</main>
 
-          {/* FOOTER */}
-          <footer className="bg-[#0B1220] border-t border-white/10 mt-32">
+          <footer className="border-t border-white/10 bg-[#07111f] text-white">
+            <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr_0.85fr_0.85fr] lg:px-8">
+              <div className="max-w-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl font-semibold tracking-tight">
+                    <span className="text-white">Speed</span>
+                    <span className="text-[#FF6A00]">Fix</span>
+                  </span>
+                  <span className="rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-orange-300">
+                    WELCOME30
+                  </span>
+                </div>
 
-            <div className="max-w-7xl mx-auto px-8 py-20 grid md:grid-cols-4 gap-14">
-
-              {/* BRAND */}
-              <div>
-                <h3 className="text-2xl font-bold mb-6 tracking-tight">
-                  <span className="text-white">Speed</span>
-                  <span className="text-[#FF6A00]">Fix</span>
-                </h3>
-
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  Smart, fast & verified home services platform.
-                  Trusted professionals at your doorstep.
+                <p className="mt-5 text-sm leading-7 text-slate-300">
+                  Premium home services with clearer category discovery,
+                  clickable subcategories, cart-first booking, and secure
+                  checkout.
                 </p>
+
+                <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    First booking offer
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-white">
+                    30% off on your first booking with coupon `WELCOME30`
+                  </p>
+                </div>
               </div>
 
-              {/* SERVICES */}
-              <div>
-                <h4 className="text-white font-semibold mb-6">
-                  Services
-                </h4>
-
-                <ul className="space-y-3 text-sm text-gray-400">
-                  {[
-                    { name: "Electrician", link: "/services/electrician" },
-                    { name: "Plumbing", link: "/services/plumbing" },
-                    { name: "AC Service", link: "/services/ac-service" },
-                    { name: "Home Cleaning", link: "/services/cleaning" },
-                    { name: "Appliance Repair", link: "/services/appliance-repair" },
-                  ].map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.link}
-                        className="hover:text-[#FF6A00] transition"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* COMPANY */}
-              <div>
-                <h4 className="text-white font-semibold mb-6">
-                  Company
-                </h4>
-
-                <ul className="space-y-3 text-sm text-gray-400">
-                  {[
-                    { name: "About Us", link: "/about" },
-                    { name: "Careers", link: "/careers" },
-                    { name: "Blog", link: "/blog" },
-                    { name: "Partner With Us", link: "/partner" },
-                  ].map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.link}
-                        className="hover:text-[#FF6A00] transition"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* SUPPORT */}
-              <div>
-                <h4 className="text-white font-semibold mb-6">
-                  Support
-                </h4>
-
-                <ul className="space-y-3 text-sm text-gray-400">
-                  {[
-                    { name: "Help Center", link: "/help" },
-                    { name: "Safety Policy", link: "/safety" },
-                    { name: "Cancellation Policy", link: "/cancellation-policy" },
-                    { name: "Contact Us", link: "/contact" },
-                  ].map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.link}
-                        className="hover:text-[#FF6A00] transition"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
+              <FooterColumn title="Popular Tasks" links={serviceLinks} />
+              <FooterColumn title="Company" links={companyLinks} />
+              <FooterColumn title="Customers" links={customerLinks} />
             </div>
 
-            {/* BOTTOM */}
-            <div className="border-t border-white/10 py-6 text-center text-xs text-gray-500">
-              © {new Date().getFullYear()} SpeedFix.co.in — All Rights Reserved.
+            <div className="border-t border-white/10 px-6 py-5 text-center text-xs text-slate-500 lg:px-8">
+              © Copyright {new Date().getFullYear()} SpeedFix.co.in. All rights reserved.
             </div>
-
           </footer>
-
         </Providers>
       </body>
     </html>
+  );
+}
+
+function FooterColumn({
+  title,
+  links,
+}: {
+  title: string;
+  links: Array<{ label: string; href: string }>;
+}) {
+  return (
+    <div>
+      <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+        {title}
+      </h2>
+      <div className="mt-5 space-y-3">
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="block text-sm text-slate-300 transition hover:text-white"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }

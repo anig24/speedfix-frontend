@@ -1,74 +1,96 @@
-export default function Terms() {
+const termsSections = [
+  {
+    title: "Service use",
+    body: [
+      "SpeedFix helps customers discover and book service professionals across categories such as cleaning, electrical, plumbing, appliance care, and AC service.",
+      "Category pages, subcategory pages, and package pricing are designed to guide booking decisions, but final job scope may still depend on the on-site assessment.",
+    ],
+  },
+  {
+    title: "Customer responsibilities",
+    body: [
+      "Customers should provide accurate contact, address, and booking details.",
+      "Safe access to the property and respectful treatment of service professionals are required during every booking.",
+    ],
+  },
+  {
+    title: "Payments and coupons",
+    body: [
+      "Online payments are processed through Razorpay. Pay-after-service may be available for selected bookings.",
+      "Coupons, including first-booking offers such as WELCOME30, may be subject to eligibility limits and may be changed or withdrawn.",
+    ],
+  },
+  {
+    title: "Cancellations and changes",
+    body: [
+      "Cancellation or refund outcomes may vary depending on booking stage, service type, and payment status.",
+      "Rescheduling or changing a booking after confirmation can affect technician availability or pricing.",
+    ],
+  },
+  {
+    title: "Liability",
+    body: [
+      "SpeedFix operates as a platform and service coordination layer. We work to improve quality and issue resolution, but service outcomes can depend on site conditions and approved job scope.",
+      "Where disputes arise, customers should contact support so the issue can be reviewed and handled.",
+    ],
+  },
+];
+
+export default function TermsPage() {
   return (
-    <div className="max-w-4xl mx-auto p-6 text-gray-800">
-      <h1 className="text-3xl font-bold mb-6">Terms & Conditions</h1>
+    <div className="bg-[#f6efe4] text-slate-900">
+      <section className="border-b border-slate-200/80">
+        <div className="mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-20">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Terms and conditions
+          </p>
+          <h1 className="mt-4 display-font text-5xl text-slate-950 md:text-6xl">
+            The booking terms behind the SpeedFix experience
+          </h1>
+          <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
+            These terms explain how bookings, payments, promotions, and service
+            responsibilities work across the SpeedFix platform.
+          </p>
+        </div>
+      </section>
 
-      <p className="mb-4">
-        These Terms & Conditions govern your use of SpeedFix services.
-        By using our platform, you agree to these terms.
-      </p>
+      <section className="mx-auto max-w-6xl px-6 py-16 lg:px-8">
+        <div className="grid gap-6 md:grid-cols-2">
+          {termsSections.map((section) => (
+            <article
+              key={section.title}
+              className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card"
+            >
+              <h2 className="text-2xl font-semibold text-slate-950">
+                {section.title}
+              </h2>
+              <div className="mt-4 space-y-3">
+                {section.body.map((item) => (
+                  <p key={item} className="text-sm leading-7 text-slate-600">
+                    {item}
+                  </p>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
 
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        1. Service Description
-      </h2>
-      <p className="mb-4">
-        SpeedFix connects customers with independent service professionals
-        including technicians, plumbers, electricians, cleaners, and other
-        household service providers.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        2. User Responsibilities
-      </h2>
-      <ul className="list-disc ml-6 mb-4">
-        <li>Provide accurate and complete information</li>
-        <li>Ensure safe access to the service location</li>
-        <li>Treat service professionals respectfully</li>
-      </ul>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        3. Payments
-      </h2>
-      <p className="mb-4">
-        All payments are securely processed through Razorpay.
-        By using our services, you agree to comply with Razorpay's
-        terms and payment policies.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        4. Cancellations & Refunds
-      </h2>
-      <p className="mb-4">
-        Cancellation and refund policies may vary depending on the type of
-        service booked. Refunds, if applicable, will be processed through
-        the original payment method.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        5. Limitation of Liability
-      </h2>
-      <p className="mb-4">
-        SpeedFix acts as a platform connecting users with independent
-        professionals. We are not directly responsible for damages,
-        losses, or disputes arising from service execution.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        6. Modifications
-      </h2>
-      <p className="mb-4">
-        We reserve the right to update these Terms at any time.
-        Continued use of the platform implies acceptance of updated terms.
-      </p>
-
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        7. Contact Information
-      </h2>
-      <p>
-        For support or legal inquiries, contact:
-        <br />
-        <strong>support@speedfix.co.in</strong>
-      </p>
+        <div className="mt-8 rounded-[2rem] border border-slate-200 bg-slate-950 p-6 text-white premium-card">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Support
+          </p>
+          <p className="mt-3 text-base leading-8 text-slate-300">
+            For legal or service-related support, reach out at{" "}
+            <a
+              href="mailto:support@speedfix.co.in"
+              className="font-semibold text-white underline underline-offset-4"
+            >
+              support@speedfix.co.in
+            </a>
+            .
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
