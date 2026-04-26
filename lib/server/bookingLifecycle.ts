@@ -143,17 +143,18 @@ async function findAssignableWorker(service: string, city: string) {
 
   const workers = workersSnapshot.docs.map((snapshot) => ({
     id: snapshot.id,
-    ...snapshot.data(),
+    ...(snapshot.data() as Record<string, unknown>),
   })) as Array<Record<string, unknown> & { id: string }>;
 
   const employees = employeesSnapshot.docs
     .map((snapshot) => ({
       id: snapshot.id,
-      ...snapshot.data(),
-    }))
-    .filter((employee) => normalizeUpper(employee.role) === "STAFF") as Array<
-    Record<string, unknown> & { id: string }
-  >;
+      ...(snapshot.data() as Record<string, unknown>),
+    })) as Array<Record<string, unknown> & { id: string }>
+
+  const staffEmployees = employees.filter(
+    (employee: any) => normalizeUpper(employee.role) === "STAFF"
+  );
 
   const candidates = [
     ...workers.map((item) => ({ source: "workers" as const, raw: item })),
