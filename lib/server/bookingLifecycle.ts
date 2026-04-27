@@ -52,6 +52,20 @@ function normalizeUpper(value: unknown) {
   return normalizeText(value).toUpperCase();
 }
 
+function normalizeNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  const normalized = normalizeText(value);
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function toStringArray(value: unknown) {
   if (Array.isArray(value)) {
     return value
