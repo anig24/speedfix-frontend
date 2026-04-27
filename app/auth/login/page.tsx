@@ -1,71 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { auth, db } from "@/lib/firebase";
+import { FormEvent, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signInWithPopup,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Eye, EyeOff } from "lucide-react";
+import { auth, db } from "@/lib/firebase";
+import { getDefaultWorkspaceHref } from "@/lib/portalAccess";
 
 export default function AuthPage() {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [captchaValue, setCaptchaValue] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-
-  const router = useRouter();
-
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  // ✅ SESSION (24 HOURS)
   useEffect(() => {
     const loginTime = localStorage.getItem("loginTime");
 
-    if (auth.currentUser && loginTime) {
-      const diff = Date.now() - parseInt(loginTime);
-
-      if (diff < 24 * 60 * 60 * 1000) {
-        router.push("/dashboard");
-      }
+    if (!auth.currentUser || !loginTime) {
+      return;
     }
+
+    const diff = Date.now() - parseInt(loginTime, 10);
+
+    if (diff >= 24 * 60 * 60 * 1000) {
+      return;
+    }
+
+    const syncExistingSession = async () => {
+      const snapshot = await getDoc(doc(db, "users", auth.currentUser!.uid));
+      const data = snapshot.exists()
+        ? snapshot.data()
+        : {
+            email: auth.currentUser?.email || "",
+            role: "CUSTOMER",
+          };
+
+      router.push(getDefaultWorkspaceHref(data, auth.currentUser?.email));
+    };
+
+    syncExistingSession().catch(() => {
+      router.push("/customer");
+    });
   }, [router]);
 
-  // 🔥 REDIRECT BASED ON ROLE
-  const redirectUser = (role: string) => {
-    switch (role) {
-      case "FOUNDER":
-        router.push("/executive");
-        break;
-      case "MANAGEMENT":
-        router.push("/management");
-        break;
-      case "STAFF":
-        router.push("/corporateStaff");
-        break;
-      case "OPERATIONS":
-        router.push("/operations");
-        break;
-      case "SUPPORT":
-        router.push("/support");
-        break;
-      default:
-        router.push("/customer");
-    }
+  const redirectUser = (record: unknown, email?: string | null) => {
+    router.push(getDefaultWorkspaceHref(record, email));
   };
 
-  // 🔐 LOGIN
-  const handleLogin = async () => {
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError("");
 
     if (!captchaValue) {
@@ -74,23 +72,26 @@ export default function AuthPage() {
     }
 
     try {
-      const res = await signInWithEmailAndPassword(
-        auth,
-        form.email,
-        form.password
-      );
-
+      const res = await signInWithEmailAndPassword(auth, form.email, form.password);
       localStorage.setItem("loginTime", Date.now().toString());
 
-      const snap = await getDoc(doc(db, "users", res.user.uid));
-      redirectUser(snap.data()?.role || "CUSTOMER");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const snapshot = await getDoc(doc(db, "users", res.user.uid));
+      redirectUser(
+        snapshot.exists()
+          ? snapshot.data()
+          : {
+              email: res.user.email || form.email,
+              role: "CUSTOMER",
+            },
+        res.user.email
+      );
+    } catch (loginError: unknown) {
+      setError(loginError instanceof Error ? loginError.message : "Login failed");
     }
   };
 
-  // 🆕 SIGNUP
-  const handleSignup = async () => {
+  const handleSignup = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError("");
 
     if (!captchaValue) {
@@ -114,14 +115,22 @@ export default function AuthPage() {
         createdAt: new Date(),
       });
 
-      router.push("/customer");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Signup failed");
+      redirectUser(
+        {
+          name: form.name,
+          email: form.email,
+          role: "CUSTOMER",
+        },
+        form.email
+      );
+    } catch (signupError: unknown) {
+      setError(signupError instanceof Error ? signupError.message : "Signup failed");
     }
   };
 
-  // 🔥 GOOGLE LOGIN
   const handleGoogleLogin = async () => {
+    setError("");
+
     try {
       const provider = new GoogleAuthProvider();
       const res = await signInWithPopup(auth, provider);
@@ -129,9 +138,9 @@ export default function AuthPage() {
       localStorage.setItem("loginTime", Date.now().toString());
 
       const ref = doc(db, "users", res.user.uid);
-      const snap = await getDoc(ref);
+      const snapshot = await getDoc(ref);
 
-      if (!snap.exists()) {
+      if (!snapshot.exists()) {
         await setDoc(ref, {
           name: res.user.displayName,
           email: res.user.email,
@@ -140,143 +149,164 @@ export default function AuthPage() {
         });
       }
 
-      router.push("/customer");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Google login failed");
+      redirectUser(
+        snapshot.exists()
+          ? snapshot.data()
+          : {
+              name: res.user.displayName,
+              email: res.user.email,
+              role: "CUSTOMER",
+            },
+        res.user.email
+      );
+    } catch (googleError: unknown) {
+      setError(
+        googleError instanceof Error ? googleError.message : "Google login failed"
+      );
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0B1220]">
-
       <div className="w-[950px] h-[550px] bg-[#020617] rounded-2xl shadow-2xl flex overflow-hidden">
-
-        {/* LEFT SIDE */}
         <div className="w-1/2 flex items-center justify-center p-10">
-
           <AnimatePresence mode="wait">
             {isLogin ? (
-              <motion.div
+              <motion.form
                 key="login"
                 initial={{ opacity: 0, x: -40 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 40 }}
                 transition={{ duration: 0.4 }}
                 className="w-full"
+                onSubmit={handleLogin}
               >
                 <h2 className="text-2xl text-white mb-6">Sign In</h2>
 
                 <input
                   placeholder="Email"
                   className="input"
-                  onChange={(e) =>
-                    setForm({ ...form, email: e.target.value })
+                  autoComplete="email"
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, email: event.target.value }))
                   }
                 />
 
-                {/* PASSWORD */}
                 <div className="relative mt-3">
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
+                    autoComplete="current-password"
                     className="input pr-12"
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        password: event.target.value,
+                      }))
                     }
                   />
 
                   <button
-                    onClick={() => setShowPassword(!showPassword)}
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#FF6A00]"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
 
-                {/* CAPTCHA */}
                 <ReCAPTCHA
                   sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                  onChange={(val: string | null) => setCaptchaValue(val)}
+                  onChange={(value: string | null) => setCaptchaValue(value)}
                   className="mt-4"
                 />
 
-                {error && (
-                  <p className="text-red-400 text-sm mt-2">{error}</p>
-                )}
+                {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
 
-                <button onClick={handleLogin} className="btn mt-6">
+                <button type="submit" className="btn mt-6">
                   Login
                 </button>
 
-                {/* GOOGLE */}
-                <button
-                  onClick={handleGoogleLogin}
-                  className="google"
-                >
-                  <img
+                <button type="button" onClick={handleGoogleLogin} className="google">
+                  <Image
                     src="https://developers.google.com/identity/images/g-logo.png"
-                    className="w-5 h-5"
+                    alt="Google"
+                    width={20}
+                    height={20}
+                    className="h-5 w-5"
                   />
                   Continue with Google
                 </button>
-              </motion.div>
+              </motion.form>
             ) : (
-              <motion.div
+              <motion.form
                 key="signup"
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -40 }}
                 transition={{ duration: 0.4 }}
                 className="w-full"
+                onSubmit={handleSignup}
               >
-                <h2 className="text-2xl text-white mb-6">
-                  Create Account
-                </h2>
+                <h2 className="text-2xl text-white mb-6">Create Account</h2>
 
                 <input
                   placeholder="Full Name"
                   className="input"
-                  onChange={(e) =>
-                    setForm({ ...form, name: e.target.value })
+                  autoComplete="name"
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, name: event.target.value }))
                   }
                 />
 
                 <input
                   placeholder="Email"
                   className="input mt-3"
-                  onChange={(e) =>
-                    setForm({ ...form, email: e.target.value })
+                  autoComplete="email"
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, email: event.target.value }))
                   }
                 />
 
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="input mt-3"
-                  onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
-                  }
-                />
+                <div className="relative mt-3">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    autoComplete="new-password"
+                    className="input pr-12"
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        password: event.target.value,
+                      }))
+                    }
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#FF6A00]"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
 
                 <ReCAPTCHA
                   sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                  onChange={(val: string | null) => setCaptchaValue(val)}
+                  onChange={(value: string | null) => setCaptchaValue(value)}
                   className="mt-4"
                 />
 
-                {error && (
-                  <p className="text-red-400 text-sm mt-2">{error}</p>
-                )}
+                {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
 
-                <button onClick={handleSignup} className="btn mt-6">
+                <button type="submit" className="btn mt-6">
                   Create Account
                 </button>
-              </motion.div>
+              </motion.form>
             )}
           </AnimatePresence>
         </div>
 
-        {/* RIGHT SIDE */}
         <motion.div
           className="w-1/2 flex items-center justify-center text-white px-10 bg-gradient-to-br from-orange-500 to-orange-700"
           animate={{ scale: isLogin ? 1 : 1.05 }}
@@ -294,7 +324,8 @@ export default function AuthPage() {
             </p>
 
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              type="button"
+              onClick={() => setIsLogin((current) => !current)}
               className="border px-6 py-2 rounded hover:bg-white hover:text-black transition"
             >
               {isLogin ? "Create Account" : "Login"}
@@ -303,7 +334,6 @@ export default function AuthPage() {
         </motion.div>
       </div>
 
-      {/* STYLES */}
       <style jsx>{`
         .input {
           width: 100%;

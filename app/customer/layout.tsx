@@ -1,9 +1,10 @@
-import DashboardLayout from "@/app/dashboard/layout";
+import type { ReactNode } from "react";
+import ProtectedWorkspaceShell from "@/app/components/workspace/ProtectedWorkspaceShell";
 
 export default function CustomerLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return <ProtectedWorkspaceShell workspace="customer">{children}</ProtectedWorkspaceShell>;
 }

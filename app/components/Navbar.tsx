@@ -1,12 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
   BriefcaseBusiness,
-  House,
   LogOut,
   MapPin,
   Menu,
@@ -26,6 +31,14 @@ import {
 import { auth, db } from "@/lib/firebase";
 import LocationGate from "@/app/components/LocationGate";
 import { getCartCount, readCart, subscribeToCart } from "@/lib/cart";
+import {
+  readStoredCity,
+  subscribeToStoredCity,
+} from "@/lib/locationStorage";
+import {
+  getAccessibleWorkspaceLinks,
+  type WorkspaceNavItem,
+} from "@/lib/workspaceCatalog";
 
 type NotificationItem = {
   id: string;
@@ -33,6 +46,12 @@ type NotificationItem = {
 };
 
 type UserProfile = {
+  name?: string;
+  email?: string;
+  role?: string;
+  active?: boolean;
+  employeeActive?: boolean;
+  employmentStatus?: string;
   premiumPlan?: boolean;
   premium?: boolean;
   plan?: string;
@@ -51,11 +70,6 @@ const primaryLinks = [
 
 const customerLinks = [
   {
-    href: "/customer",
-    label: "My account",
-    icon: <House className="h-4 w-4" />,
-  },
-  {
     href: "/cart",
     label: "Cart",
     icon: <ShoppingBag className="h-4 w-4" />,
@@ -73,24 +87,23 @@ const customerLinks = [
 ];
 
 export default function Navbar() {
-  const [city, setCity] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("city") || "" : ""
-  );
   const [showLocation, setShowLocation] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(() => getCartCount(readCart()));
   const [bookingStatus, setBookingStatus] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [hasPremiumBadge, setHasPremiumBadge] = useState(false);
+  const [workspaceLinks, setWorkspaceLinks] = useState<WorkspaceNavItem[]>([]);
+  const city = useSyncExternalStore(subscribeToStoredCity, readStoredCity, () => "");
+  const cartCount = useSyncExternalStore(
+    subscribeToCart,
+    () => getCartCount(readCart()),
+    () => 0
+  );
 
   useEffect(() => {
-    const unsubscribeCart = subscribeToCart(() => {
-      setCartCount(getCartCount(readCart()));
-    });
-
     const unsubscribeAuth = onAuthStateChanged(auth, (nextUser) => {
       setUser(nextUser);
 
@@ -98,11 +111,11 @@ export default function Navbar() {
         setNotifications([]);
         setBookingStatus("");
         setHasPremiumBadge(false);
+        setWorkspaceLinks([]);
       }
     });
 
     return () => {
-      unsubscribeCart();
       unsubscribeAuth();
     };
   }, []);
@@ -164,11 +177,42 @@ export default function Navbar() {
           planName === "premium" ||
           subscriptionTier === "premium"
       );
+
+      setWorkspaceLinks(
+        getAccessibleWorkspaceLinks(
+          {
+            ...profile,
+            email: profile?.email || user.email || "",
+            role: profile?.role || "CUSTOMER",
+            active:
+              typeof profile?.active === "boolean" ? profile.active : true,
+            employeeActive:
+              typeof profile?.employeeActive === "boolean"
+                ? profile.employeeActive
+                : true,
+            employmentStatus:
+              profile?.employmentStatus || (profile?.role ? "ACTIVE" : "CUSTOMER"),
+          },
+          profile?.email || user.email || ""
+        )
+      );
     };
 
     loadProfile().catch(() => {
       if (active) {
         setHasPremiumBadge(false);
+        setWorkspaceLinks(
+          getAccessibleWorkspaceLinks(
+            {
+              email: user.email || "",
+              role: "CUSTOMER",
+              active: true,
+              employeeActive: true,
+              employmentStatus: "CUSTOMER",
+            },
+            user.email || ""
+          )
+        );
       }
     });
 
@@ -210,7 +254,6 @@ export default function Navbar() {
 
   const syncLocation = () => {
     setShowLocation(false);
-    setCity(localStorage.getItem("city") || "");
   };
 
   return (
@@ -356,6 +399,23 @@ export default function Navbar() {
                         </p>
                       </div>
 
+                      {workspaceLinks.length > 0 && (
+                        <div className="border-b border-white/10 px-2 py-2">
+                          <p className="px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/45">
+                            Dashboards
+                          </p>
+                          {workspaceLinks.map((item) => (
+                            <MenuItem
+                              key={item.href}
+                              href={item.href}
+                              icon={<item.icon className="h-4 w-4" />}
+                              label={item.label}
+                              onClick={() => setMenuOpen(false)}
+                            />
+                          ))}
+                        </div>
+                      )}
+
                       <div className="py-2">
                         {customerLinks.map((item) => (
                           <MenuItem
@@ -481,6 +541,15 @@ export default function Navbar() {
               <div className="mt-8 rounded-[1.4rem] border border-white/10 bg-white/5 p-4">
                 <p className="text-sm font-semibold text-white">{user.email}</p>
                 <div className="mt-4 space-y-2">
+                  {workspaceLinks.map((item) => (
+                    <MenuItem
+                      key={item.href}
+                      href={item.href}
+                      icon={<item.icon className="h-4 w-4" />}
+                      label={item.label}
+                      onClick={() => setMobileOpen(false)}
+                    />
+                  ))}
                   {customerLinks.map((item) => (
                     <MenuItem
                       key={item.href}

@@ -12,6 +12,11 @@ import {
   BookingTimelineEvent,
   createBookingTimelineEvent,
 } from "@/lib/bookingTracking";
+import {
+  calculateDistanceKm,
+  extractCoordinates,
+  type Coordinates,
+} from "@/lib/liveTracking";
 import { serverDb } from "@/lib/firebase-server";
 
 type WorkerSource = "workers" | "employees";
@@ -28,6 +33,7 @@ type AssignedWorker = {
   avatar: string | null;
   rating: number | null;
   liveLocationLabel: string | null;
+  liveCoordinates: Coordinates | null;
 };
 
 type BookingPayload = Record<string, unknown> & {
@@ -35,6 +41,7 @@ type BookingPayload = Record<string, unknown> & {
   serviceName?: string;
   city?: string;
   paymentStatus?: string;
+  customerLocation?: Coordinates | null;
 };
 
 function normalizeText(value: unknown) {
@@ -43,10 +50,6 @@ function normalizeText(value: unknown) {
 
 function normalizeUpper(value: unknown) {
   return normalizeText(value).toUpperCase();
-}
-
-function normalizeNumber(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function toStringArray(value: unknown) {
@@ -132,10 +135,57 @@ function mapWorkerCandidate(
       normalizeText(raw.locationLabel) ||
       normalizeText(raw.city) ||
       null,
+    liveCoordinates: extractCoordinates(
+      raw.liveCoordinates,
+      raw.currentCoordinates,
+      raw.locationCoordinates,
+      raw.coordinates,
+      raw.geoPoint,
+      {
+        latitude: raw.latitude,
+        longitude: raw.longitude,
+      },
+      {
+        lat: raw.lat,
+        lng: raw.lng,
+      }
+    ),
   };
 }
 
-async function findAssignableWorker(service: string, city: string) {
+function getDistanceScore(
+  customerCoordinates: Coordinates | null,
+  workerCoordinates: Coordinates | null
+) {
+  if (!customerCoordinates || !workerCoordinates) {
+    return {
+      score: 0,
+      distanceKm: null as number | null,
+    };
+  }
+
+  const distanceKm = calculateDistanceKm(customerCoordinates, workerCoordinates);
+
+  if (distanceKm <= 5) {
+    return { score: 4, distanceKm };
+  }
+
+  if (distanceKm <= 12) {
+    return { score: 3, distanceKm };
+  }
+
+  if (distanceKm <= 25) {
+    return { score: 2, distanceKm };
+  }
+
+  return { score: 1, distanceKm };
+}
+
+async function findAssignableWorker(
+  service: string,
+  city: string,
+  customerCoordinates: Coordinates | null
+) {
   const [workersSnapshot, employeesSnapshot] = await Promise.all([
     getDocs(collection(serverDb, "workers")),
     getDocs(collection(serverDb, "employees")),
@@ -150,11 +200,7 @@ async function findAssignableWorker(service: string, city: string) {
     .map((snapshot) => ({
       id: snapshot.id,
       ...(snapshot.data() as Record<string, unknown>),
-    })) as Array<Record<string, unknown> & { id: string }>
-
-  const staffEmployees = employees.filter(
-    (employee: any) => normalizeUpper(employee.role) === "STAFF"
-  );
+    })) as Array<Record<string, unknown> & { id: string }>;
 
   const candidates = [
     ...workers.map((item) => ({ source: "workers" as const, raw: item })),
@@ -163,12 +209,35 @@ async function findAssignableWorker(service: string, city: string) {
     .filter((candidate) => isAvailable(candidate.raw))
     .map((candidate) => ({
       ...candidate,
+      worker: mapWorkerCandidate(candidate.source, candidate.raw),
+      distance: getDistanceScore(
+        customerCoordinates,
+        mapWorkerCandidate(candidate.source, candidate.raw).liveCoordinates
+      ),
+    }))
+    .map((candidate) => ({
+      ...candidate,
       score:
         (matchesService(candidate.raw, service) ? 4 : 0) +
         (matchesCity(candidate.raw, city) ? 2 : 0) +
+        candidate.distance.score +
         (normalizeText(candidate.raw.name) ? 1 : 0),
     }))
-    .sort((left, right) => right.score - left.score);
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      if (left.distance.distanceKm === null) {
+        return 1;
+      }
+
+      if (right.distance.distanceKm === null) {
+        return -1;
+      }
+
+      return left.distance.distanceKm - right.distance.distanceKm;
+    });
 
   const bestMatch = candidates.find((candidate) => candidate.score >= 4) || candidates[0];
 
@@ -176,7 +245,7 @@ async function findAssignableWorker(service: string, city: string) {
     return null;
   }
 
-  return mapWorkerCandidate(bestMatch.source, bestMatch.raw);
+  return bestMatch.worker;
 }
 
 function buildInitialTimeline(
@@ -232,9 +301,11 @@ function buildInitialTimeline(
 
 export async function createTrackedBooking(bookingData: BookingPayload) {
   const nowIso = new Date().toISOString();
+  const customerCoordinates = extractCoordinates(bookingData.customerLocation);
   const worker = await findAssignableWorker(
     normalizeText(bookingData.service),
-    normalizeText(bookingData.city)
+    normalizeText(bookingData.city),
+    customerCoordinates
   );
   const timeline = buildInitialTimeline(bookingData, worker, nowIso);
   const bookingRef = doc(collection(serverDb, "bookings"));
@@ -262,10 +333,12 @@ export async function createTrackedBooking(bookingData: BookingPayload) {
     workerLiveLocation: worker
       ? {
           label: worker.liveLocationLabel || worker.city || normalizeText(bookingData.city) || "Assigned area",
+          coordinates: worker.liveCoordinates,
           updatedAt: nowIso,
           source: "assignment",
         }
       : null,
+    customerLocation: customerCoordinates,
     trackingTimeline: timeline,
     trackingLastUpdatedAt: nowIso,
     createdAt: serverTimestamp(),

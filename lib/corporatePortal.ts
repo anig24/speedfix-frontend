@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   UserRoundCheck,
+  UserRoundSearch,
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -114,6 +115,81 @@ export const corporateSections: CorporateSection[] = [
         insights: [
           "Focused on risk, not raw volume",
           "Helps managers keep premium service standards intact",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "hr",
+    title: "HR",
+    eyebrow: "Hiring and employee access",
+    description:
+      "Run hiring, recruiter workflow, employee access, and careers operations inside the same company portal used by the rest of the internal team.",
+    icon: UserRoundSearch,
+    accent: "from-pink-500 via-rose-500 to-orange-400",
+    summaryStats: ["Hiring desk", "Employee access", "Recruiter workflow"],
+    subcategories: [
+      {
+        slug: "access-control",
+        title: "Access Control",
+        summary: "Provision company accounts and role-based corporate access from one HR-owned flow.",
+        description:
+          "HR can create new employee logins, assign work roles, and keep access aligned with the company email model under the corporate portal.",
+        responsibilities: [
+          "Create employee access for active company users",
+          "Assign role-based internal dashboard access",
+          "Keep onboarding and recruiter-created accounts clean",
+        ],
+        quickActions: [
+          "Create employee login",
+          "Review recent employee access",
+          "Validate work email roles",
+        ],
+        insights: [
+          "HR now lives under the corporate portal instead of a separate top-level dashboard",
+          "Useful for recruiters and HR leads managing company access",
+        ],
+      },
+      {
+        slug: "recruiter-desk",
+        title: "Recruiter Desk",
+        summary: "Manage field recruiter follow-up, candidate movement, and hiring ownership from a dedicated recruiter lane.",
+        description:
+          "This desk is for recruiter and field recruiter teams managing sourcing, hiring coordination, and candidate pipeline movement without exposing unrelated company dashboards.",
+        responsibilities: [
+          "Track recruiter-owned hiring requests",
+          "Coordinate field recruiter follow-up by city",
+          "Keep candidate movement visible across hiring stages",
+        ],
+        quickActions: [
+          "Open recruiter queue",
+          "Review active field hiring",
+          "Update candidate next steps",
+        ],
+        insights: [
+          "Built for recruiter and field recruiter workflows inside corporate",
+          "Keeps hiring operations separate from access-control administration",
+        ],
+      },
+      {
+        slug: "careers-posting",
+        title: "Careers Posting",
+        summary: "Open roles, update hiring demand, and keep the public careers page current.",
+        description:
+          "Use the careers flow to publish role details, hiring locations, and public-facing openings without leaving the corporate portal structure.",
+        responsibilities: [
+          "Publish and update open roles",
+          "Coordinate recruiter and department hiring demand",
+          "Keep public listings aligned with live openings",
+        ],
+        quickActions: [
+          "Post a new role",
+          "Review published openings",
+          "Update hiring priorities",
+        ],
+        insights: [
+          "Connects internal HR workflow with the public careers experience",
+          "Best for recruiter and hiring-ops ownership",
         ],
       },
     ],
@@ -583,6 +659,11 @@ export const corporateHighlights = [
 
 export const corporateQuickLinks = [
   {
+    title: "HR Access",
+    href: "/corporate/hr/access-control",
+    icon: UserRoundSearch,
+  },
+  {
     title: "Operations Queue",
     href: "/corporate/operations/bookings-desk",
     icon: Wrench,
@@ -625,19 +706,24 @@ export const corporateLegacyRedirects: Record<string, string> = {
   "/admin/analytics": "/corporate/command-center/sla-watch",
   "/admin/technicians": "/corporate/operations/technician-allocation",
   "/admin/users": "/corporate/command-center/task-board",
-  "/dashboard": "/corporate/command-center",
-  "/executive": "/corporate/command-center",
+  "/dashboard": "/customer",
+  "/executive": "/founder",
+  "/founder": "/corporate/command-center/daily-brief",
+  "/hr": "/corporate/hr",
+  "/hr/access-control": "/corporate/hr/access-control",
+  "/accounts": "/corporate/finance/payment-watch",
+  "/audit": "/corporate/quality/service-audits",
   "/management": "/corporate/command-center/daily-brief",
   "/operations": "/corporate/operations",
-  "/support": "/corporate/support",
-  "/corporateStaff": "/corporate/command-center/task-board",
+  "/support": "/agent/customer-desk",
+  "/corporateStaff": "/customer",
   "/entry": "/corporate/command-center/daily-brief",
-  "/hr": "/corporate/catalog/portal-settings",
 };
 
-export const corporateHiddenFromPublicFooter = ["/corporate", "/corporate/login"];
+export const corporateHiddenFromPublicFooter = ["/corporate", "/corporate-login"];
 
 export const corporateSidebarFooterLinks = [
+  { label: "HR Access", href: "/corporate/hr/access-control", icon: UserRoundSearch },
   { label: "Portal Settings", href: "/corporate/catalog/portal-settings", icon: BellRing },
   { label: "Category Builder", href: "/corporate/catalog/category-builder", icon: Building2 },
   { label: "Audit and Quality", href: "/corporate/quality/service-audits", icon: BarChart3 },

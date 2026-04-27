@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { serverDb } from "@/lib/firebase-server";
-import { canPostCareerRole, normalizeRole } from "@/lib/recruiterAccess";
+import { canPostCareerIdentity, normalizeRole } from "@/lib/recruiterAccess";
 
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!canPostCareerRole(posterRole)) {
+    if (!canPostCareerIdentity({ role: posterRole, email: posterEmail })) {
       return NextResponse.json(
         { error: "Only HR or recruiter accounts can post job openings." },
         { status: 403 }

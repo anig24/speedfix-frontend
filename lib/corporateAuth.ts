@@ -1,16 +1,13 @@
 import { ROLES } from "@/lib/roles";
 
-const COMPANY_ROLES = new Set([
-  ROLES.FOUNDER,
-  ROLES.BUSINESS_HEAD,
-  ROLES.STATE_MANAGER,
-  ROLES.CITY_MANAGER,
-  ROLES.OPERATIONS,
+const AGENT_ROLES = new Set([
   ROLES.SUPPORT,
-  ROLES.STAFF,
-  "MANAGEMENT",
-  "ENTRY",
-  "HR",
+  "AGENT",
+  "SENIOR_AGENT",
+  "TEAM_LEAD",
+  "CALL_AGENT",
+  "CUSTOMER_SUCCESS",
+  "SUPPORT_LEAD",
 ]);
 
 export type CorporateUserRecord = {
@@ -30,6 +27,10 @@ export type CorporateUserRecord = {
 
 function normalizeString(value: unknown) {
   return typeof value === "string" ? value.trim().toUpperCase() : "";
+}
+
+function normalizeEmail(value: unknown) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
 function flagValue(value: unknown) {
@@ -57,8 +58,13 @@ export function isActiveCorporateEmployee(record: unknown) {
 
   const user = record as CorporateUserRecord;
   const role = normalizeString(user.role);
+  const email = normalizeEmail(user.email);
 
-  if (!COMPANY_ROLES.has(role)) {
+  if (!email.endsWith("@speedfix.co.in")) {
+    return false;
+  }
+
+  if (!role || ["CUSTOMER", "CONSUMER"].includes(role) || AGENT_ROLES.has(role)) {
     return false;
   }
 

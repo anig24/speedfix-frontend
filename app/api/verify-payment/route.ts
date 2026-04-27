@@ -1,27 +1,6 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
-import {
-  addDoc,
-  collection,
-  getDocs,
-  serverTimestamp,
-} from "firebase/firestore";
-import { serverDb } from "@/lib/firebase-server";
-
-const assignWorker = async (service: string) => {
-  const snapshot = await getDocs(collection(serverDb, "workers"));
-
-  const workers = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Array<Record<string, unknown> & { id: string }>;
-
-  const available = workers.find(
-    (worker) => worker.service === service && worker.available === true
-  );
-
-  return available || null;
-};
+import { createTrackedBooking } from "@/lib/server/bookingLifecycle";
 
 export async function POST(req: Request) {
   try {
@@ -58,26 +37,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const worker = await assignWorker(bookingData.service);
-
-    const finalBooking = {
+    const result = await createTrackedBooking({
       ...bookingData,
       paymentId: razorpay_payment_id,
-      status: worker ? "CONFIRMED" : "PENDING",
-      technicianId: worker?.id ?? null,
-      technicianName: typeof worker?.name === "string" ? worker.name : null,
-      workerId: worker?.id ?? null,
-      workerName: typeof worker?.name === "string" ? worker.name : null,
-      riderId: null,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
-
-    await addDoc(collection(serverDb, "bookings"), finalBooking);
+      paymentStatus: "PAID",
+      status: "CONFIRMED",
+    });
 
     return NextResponse.json({
       success: true,
-      assigned: Boolean(worker),
+      bookingId: result.bookingId,
+      assigned: result.assigned,
+      worker: result.worker,
     });
   } catch (error) {
     console.error("VERIFY ERROR:", error);

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState, useSyncExternalStore } from "react";
 import {
   ArrowRight,
   BadgePercent,
@@ -23,6 +23,10 @@ import {
   operatingCities,
   serviceCatalog,
 } from "@/lib/serviceCatalog";
+import {
+  readStoredCity,
+  subscribeToStoredCity,
+} from "@/lib/locationStorage";
 
 const reveal = {
   initial: { opacity: 0, y: 24 },
@@ -32,9 +36,7 @@ const reveal = {
 };
 
 export default function HomePage() {
-  const [city, setCity] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("city") || "" : ""
-  );
+  const city = useSyncExternalStore(subscribeToStoredCity, readStoredCity, () => "");
   const [query, setQuery] = useState("");
   const [showLocationGate, setShowLocationGate] = useState(false);
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
@@ -80,7 +82,6 @@ export default function HomePage() {
   }, [deferredQuery]);
 
   const syncLocation = () => {
-    setCity(localStorage.getItem("city") || "");
     setShowLocationGate(false);
   };
 

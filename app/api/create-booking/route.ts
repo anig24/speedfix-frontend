@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { serverDb } from "@/lib/firebase-server";
+import { createTrackedBooking } from "@/lib/server/bookingLifecycle";
 
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -30,17 +29,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const docRef = await addDoc(collection(serverDb, "bookings"), {
+    const result = await createTrackedBooking({
       ...bookingData,
       status: "PENDING",
       paymentStatus: "PENDING",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
     });
 
     return NextResponse.json({
       success: true,
-      bookingId: docRef.id,
+      bookingId: result.bookingId,
+      assigned: result.assigned,
+      worker: result.worker,
     });
   } catch (error) {
     console.error("CREATE_BOOKING_ERROR", error);

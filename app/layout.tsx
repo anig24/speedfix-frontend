@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 import Navbar from "./components/Navbar";
+import TawkChatWidget from "./components/TawkChatWidget";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
@@ -66,6 +67,7 @@ export default function RootLayout({
 
         <Providers>
           <Navbar />
+          <TawkChatWidget />
 
           <main className="min-h-screen pt-16">{children}</main>
 

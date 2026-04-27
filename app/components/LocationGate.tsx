@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import CitySection from "@/app/components/CitySection";
+import { writeStoredCity, writeStoredLocation } from "@/lib/locationStorage";
 
 export default function LocationGate({ onClose }: { onClose: () => void }) {
   const [pincode, setPincode] = useState("");
@@ -21,7 +22,10 @@ export default function LocationGate({ onClose }: { onClose: () => void }) {
         const data = await res.json();
         const city = data.city || data.locality || "Unknown";
 
-        localStorage.setItem("city", city);
+        writeStoredLocation(city, {
+          latitude,
+          longitude,
+        });
         onClose();
       } catch {
         alert("Failed to detect location");
@@ -45,7 +49,7 @@ export default function LocationGate({ onClose }: { onClose: () => void }) {
       if (data[0].Status === "Success") {
         const city = data[0].PostOffice[0].District;
 
-        localStorage.setItem("city", city);
+        writeStoredCity(city);
         localStorage.setItem("pincode", pincode);
 
         onClose();

@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { readStoredCity, writeStoredCity } from "@/lib/locationStorage";
 
 export default function CitySection({ onSelect }: { onSelect?: () => void }) {
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
-
-  useEffect(() => {
-    const savedCity = localStorage.getItem("city");
-    if (savedCity) setSelectedCity(savedCity);
-  }, []);
+  const [selectedCity, setSelectedCity] = useState<string | null>(
+    readStoredCity() || null
+  );
 
   const cities = [
     { name: "Mumbai", image: "/cities/mumbai.png" },
@@ -21,7 +19,7 @@ export default function CitySection({ onSelect }: { onSelect?: () => void }) {
 
 const handleSelect = (city: string) => {
   setSelectedCity(city);
-  localStorage.setItem("city", city);
+  writeStoredCity(city);
 
   if (onSelect) onSelect();
 

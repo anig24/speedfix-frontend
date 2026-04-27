@@ -23,6 +23,7 @@ import {
   validateCoupon,
   writeCheckoutAddress,
 } from "@/lib/cart";
+import { readStoredCoordinates } from "@/lib/locationStorage";
 
 type PaymentMethod = "razorpay" | "pay-on-service";
 type RazorpayWindow = Window &
@@ -30,23 +31,31 @@ type RazorpayWindow = Window &
     Razorpay?: new (options: unknown) => { open: () => void };
   };
 
-function getDefaultAddress(): CartAddress {
-  return readCheckoutAddress();
-}
+const EMPTY_ADDRESS: CartAddress = {
+  fullName: "",
+  phone: "",
+  city: "",
+  pincode: "",
+  addressLine: "",
+  landmark: "",
+};
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
-  const [address, setAddress] = useState<CartAddress>(getDefaultAddress);
+  const [address, setAddress] = useState<CartAddress>(EMPTY_ADDRESS);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCouponCode, setAppliedCouponCode] = useState("");
   const [couponMessage, setCouponMessage] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("razorpay");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [hasHydratedAddress, setHasHydratedAddress] = useState(false);
 
   useEffect(() => {
     setItems(readCart());
+    setAddress(readCheckoutAddress());
+    setHasHydratedAddress(true);
   }, []);
 
   const subtotal = useMemo(() => getCartSubtotal(items), [items]);
@@ -61,8 +70,12 @@ export default function CheckoutPage() {
   const finalTotal = Math.max(subtotal - discountAmount, 0);
 
   useEffect(() => {
+    if (!hasHydratedAddress) {
+      return;
+    }
+
     writeCheckoutAddress(address);
-  }, [address]);
+  }, [address, hasHydratedAddress]);
 
   const handleAddressChange = <K extends keyof CartAddress>(
     field: K,
@@ -109,6 +122,7 @@ export default function CheckoutPage() {
 
   const buildBookingData = () => {
     const primaryItem = items[0];
+    const customerCoordinates = readStoredCoordinates();
 
     return {
       service: primaryItem.serviceSlug,
@@ -124,6 +138,7 @@ export default function CheckoutPage() {
       discountAmount,
       couponCode: activeCoupon?.discountPercent ? activeCoupon.code : null,
       paymentMethod,
+      customerLocation: customerCoordinates,
       items: items.map((item) => ({
         serviceName: item.serviceName,
         subcategoryName: item.subcategoryName || null,
@@ -135,12 +150,17 @@ export default function CheckoutPage() {
     };
   };
 
-  const finishBooking = () => {
+  const finishBooking = (bookingId: string, assigned: boolean) => {
     markFirstBookingUsed();
     clearCart();
-    setSuccessMessage("Booking confirmed. Your payment and address details are saved.");
+    localStorage.setItem("speedfix_latest_booking_id", bookingId);
+    setSuccessMessage(
+      assigned
+        ? "Booking confirmed. A nearby technician has been assigned."
+        : "Booking confirmed. We are assigning the nearest available technician now."
+    );
     setTimeout(() => {
-      router.push("/");
+      router.push(`/track?bookingId=${bookingId}`);
     }, 2200);
   };
 
@@ -163,6 +183,11 @@ export default function CheckoutPage() {
     if (!response.ok) {
       throw new Error(result.error || "Unable to place your booking.");
     }
+
+    return result as {
+      bookingId: string;
+      assigned: boolean;
+    };
   };
 
   const handleRazorpay = async () => {
@@ -212,7 +237,7 @@ export default function CheckoutPage() {
           throw new Error(verifyResult.error || "Payment verification failed.");
         }
 
-        finishBooking();
+        finishBooking(verifyResult.bookingId, Boolean(verifyResult.assigned));
       },
       prefill: {
         name: address.fullName,
@@ -247,8 +272,8 @@ export default function CheckoutPage() {
 
     try {
       if (paymentMethod === "pay-on-service") {
-        await handlePayAfterService();
-        finishBooking();
+        const result = await handlePayAfterService();
+        finishBooking(result.bookingId, Boolean(result.assigned));
       } else {
         await handleRazorpay();
       }

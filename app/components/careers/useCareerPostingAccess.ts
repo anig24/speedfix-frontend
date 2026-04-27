@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { type User, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { canPostCareerRole } from "@/lib/recruiterAccess";
+import { canPostCareerIdentity } from "@/lib/recruiterAccess";
 
 export function useCareerPostingAccess() {
   const [user, setUser] = useState<User | null>(auth.currentUser);
@@ -33,13 +33,22 @@ export function useCareerPostingAccess() {
         const snapshot = await getDoc(doc(db, "users", nextUser.uid));
         const nextRole =
           typeof snapshot.data()?.role === "string" ? snapshot.data()?.role : "";
+        const nextEmail =
+          typeof snapshot.data()?.email === "string"
+            ? snapshot.data()?.email
+            : nextUser.email || "";
 
         if (!active) {
           return;
         }
 
         setRole(nextRole);
-        setIsAuthorized(canPostCareerRole(nextRole));
+        setIsAuthorized(
+          canPostCareerIdentity({
+            role: nextRole,
+            email: nextEmail,
+          })
+        );
       } catch {
         if (!active) {
           return;

@@ -1,16 +1,18 @@
-const CAREER_POSTING_ROLES = new Set([
-  "HR",
-  "HEAD_HR",
-  "JR_HR",
-  "HR_INTERN",
-  "RECRUITER",
-  "HEAD_RECRUITER",
-]);
+import {
+  canPostCareerAccess,
+  hasHrIdentity,
+  normalizeRole,
+} from "@/lib/portalAccess";
 
-export function normalizeRole(value: unknown) {
-  return typeof value === "string" ? value.trim().toUpperCase() : "";
-}
+export { normalizeRole };
 
 export function canPostCareerRole(role: unknown) {
-  return CAREER_POSTING_ROLES.has(normalizeRole(role));
+  return hasHrIdentity("", role);
+}
+
+export function canPostCareerIdentity(input: {
+  email?: unknown;
+  role?: unknown;
+}) {
+  return canPostCareerAccess(input);
 }
