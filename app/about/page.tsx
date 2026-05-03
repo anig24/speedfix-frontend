@@ -1,133 +1,125 @@
 "use client";
 
-import { useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion } from "framer-motion";
+import { ArrowRight, Building2, ShieldCheck, Users2 } from "lucide-react";
+
+const reveal = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.2 },
+  transition: { duration: 0.5, ease: "easeOut" as const },
+};
 
 export default function AboutPage() {
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-
-    gsap.utils.toArray(".reveal").forEach((el: any) => {
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top 85%",
-          },
-        }
-      );
-    });
-  }, []);
-
   return (
-    <div className="bg-[#0b1b2b] text-white">
+    <div className="public-shell text-slate-900">
+      <section className="relative overflow-hidden border-b border-slate-200/80">
+        <div className="hero-grid absolute inset-0 opacity-70" />
+        <div className="public-hero-glow absolute inset-x-0 top-0 h-[32rem]" />
 
-      {/* HERO */}
-      <section className="py-36 px-6 md:px-20 text-center border-b border-white/10">
-        <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight max-w-4xl mx-auto">
-          Building Reliable Workforce Solutions
-          <br /> For Modern India with SpeedFix
-        </h1>
-
-        <p className="mt-8 text-lg opacity-70 max-w-3xl mx-auto">
-          SpeedFix delivers disciplined, verified and professionally managed
-          doorstep workforce services designed to support residential and
-          commercial environments with consistency and accountability.
-        </p>
-      </section>
-
-      {/* COMPANY OVERVIEW */}
-      <section className="py-28 px-6 md:px-20 max-w-6xl mx-auto reveal">
-        <h2 className="text-3xl font-semibold mb-8 text-white">
-          About SpeedFix
-        </h2>
-
-        <p className="leading-8 text-lg opacity-80">
-          SpeedFix is a structured workforce service company committed to
-          delivering dependable manpower solutions across major cities.
-          Our focus is on professional conduct, punctual deployment, and
-          maintaining consistent service standards.
-        </p>
-
-        <p className="leading-8 text-lg opacity-80 mt-6">
-          We operate with a disciplined approach to workforce management,
-          ensuring every service assignment reflects reliability, respect,
-          and operational efficiency.
-        </p>
-      </section>
-
-      {/* SERVICES BLOCK */}
-      <section className="py-28 px-6 md:px-20 bg-[#071420] reveal">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-semibold mb-16 text-white">
-            Our Services
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-16">
-
-            <div>
-              <h3 className="text-2xl font-semibold mb-6">
-                Home Workforce Services
-              </h3>
-              <p className="opacity-80 leading-8">
-                Professional maids and domestic support staff for daily
-                household operations, ensuring structured assistance and
-                reliable service continuity.
-              </p>
+        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+          <motion.div {...reveal} className="max-w-5xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-4 py-2 text-sm text-slate-700">
+              <Building2 className="h-4 w-4 text-orange-500" />
+              About SpeedFix
             </div>
 
-            <div>
-              <h3 className="text-2xl font-semibold mb-6">
-                Cleaning & Hygiene Solutions
-              </h3>
-              <p className="opacity-80 leading-8">
-                Systematic cleaning services for residential and commercial
-                properties, maintaining hygiene, presentation, and operational
-                standards.
-              </p>
-            </div>
+            <h1 className="mt-5 display-font text-5xl leading-tight text-slate-950 md:text-6xl">
+              About SpeedFix
+            </h1>
 
-            <div>
-              <h3 className="text-2xl font-semibold mb-6">
-                Facility Support Staff
-              </h3>
-              <p className="opacity-80 leading-8">
-                Reliable workforce deployment for offices, residential
-                complexes, and organized environments where structured manpower
-                is essential.
-              </p>
-            </div>
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
+              SpeedFix provides professional home services for repairs,
+              cleaning, maintenance, and installations through a structured
+              category and booking model.
+            </p>
+          </motion.div>
 
-          </div>
+          <motion.div
+            {...reveal}
+            className="mt-10 grid gap-5 md:grid-cols-3"
+          >
+            {[
+              ["Verified workforce", "Uniformed professionals with accountable service standards."],
+              ["Operational discipline", "Clearer routing, cleaner support, and stronger follow-through."],
+              ["Premium booking", "A calmer, more reliable customer flow from category to completion."],
+            ].map(([title, text]) => (
+              <div
+                key={title}
+                className="surface-panel rounded-[2rem] border border-slate-200 p-6"
+              >
+                <p className="text-lg font-semibold text-slate-950">{title}</p>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{text}</p>
+              </div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
-      {/* COMMITMENT */}
-      <section className="py-28 px-6 md:px-20 max-w-5xl mx-auto text-center reveal">
-        <h2 className="text-3xl font-semibold mb-8 text-white">
-          Our Commitment
-        </h2>
+      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+          <motion.div
+            {...reveal}
+            className="surface-panel rounded-[2.25rem] border border-slate-200 p-8"
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+              Company overview
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold text-slate-950">
+              Structured service operations and customer support
+            </h2>
+            <p className="mt-5 text-base leading-8 text-slate-600">
+              SpeedFix focuses on reliable service standards, verified teams,
+              more precise task selection, and stronger customer trust before,
+              during, and after the visit.
+            </p>
+            <p className="mt-5 text-base leading-8 text-slate-600">
+              The platform is organized to help customers move from category
+              selection into the required task page, cart, and checkout without
+              an unstructured browsing experience.
+            </p>
+          </motion.div>
 
-        <p className="text-lg leading-8 opacity-80">
-          SpeedFix is committed to strengthening service reliability through
-          disciplined workforce deployment, verified staffing processes, and
-          consistent operational standards.
-        </p>
-
-        <p className="text-lg leading-8 opacity-80 mt-6">
-          We aim to build long-term trust by delivering dependable service
-          experiences that meet the expectations of modern households and
-          professional environments.
-        </p>
+          <motion.div
+            {...reveal}
+            className="dark-panel rounded-[2.25rem] p-8 text-white"
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">
+              What we optimize for
+            </p>
+            <div className="mt-6 space-y-4">
+              {[
+                {
+                  icon: ShieldCheck,
+                  title: "Trust by default",
+                  text: "Verified teams, accountable service quality, and cleaner arrival standards.",
+                },
+                {
+                  icon: Users2,
+                  title: "Operational reliability",
+                  text: "More consistent support, routing, and service follow-through.",
+                },
+                {
+                  icon: ArrowRight,
+                  title: "Customer clarity",
+                  text: "Category-first discovery and easier movement into the exact task.",
+                },
+              ].map(({ icon: Icon, title, text }) => (
+                <div
+                  key={title}
+                  className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4"
+                >
+                  <div className="inline-flex rounded-2xl bg-white/10 p-3 text-orange-300">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <p className="mt-3 text-lg font-semibold text-white">{title}</p>
+                  <p className="mt-2 text-sm leading-7 text-slate-300">{text}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </section>
-
     </div>
   );
 }

@@ -20,28 +20,28 @@ export default async function CorporateSubcategoryPage({
 
   return (
     <div className="space-y-8">
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
           {cleanCopy(section.title)} / {cleanCopy(subcategory.title)}
         </p>
-        <h2 className="mt-3 text-4xl font-semibold text-white">
+        <h2 className="mt-3 text-4xl font-semibold text-slate-950">
           {cleanCopy(subcategory.summary)}
         </h2>
-        <p className="mt-4 max-w-3xl text-sm leading-8 text-slate-300">
+        <p className="mt-4 max-w-3xl text-sm leading-8 text-slate-600">
           {cleanCopy(subcategory.description)}
         </p>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <article className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Responsibilities
           </p>
           <div className="mt-5 space-y-3">
             {subcategory.responsibilities.map((item) => (
               <div
                 key={item}
-                className="rounded-[1.2rem] bg-[#0c1424] px-4 py-3 text-sm text-slate-300"
+                className="rounded-[1.2rem] bg-slate-50 px-4 py-3 text-sm text-slate-600"
               >
                 {cleanCopy(item)}
               </div>
@@ -49,15 +49,15 @@ export default async function CorporateSubcategoryPage({
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Insights
           </p>
           <div className="mt-5 space-y-3">
             {subcategory.insights.map((item) => (
               <div
                 key={item}
-                className="rounded-[1.2rem] bg-[#0c1424] px-4 py-3 text-sm text-slate-300"
+                className="rounded-[1.2rem] bg-slate-50 px-4 py-3 text-sm text-slate-600"
               >
                 {cleanCopy(item)}
               </div>

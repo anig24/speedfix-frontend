@@ -26,6 +26,7 @@ import { AlertCircle, CheckCircle2, ShieldCheck, UserPlus } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import {
   canAccessWorkspace,
+  getDefaultWorkspaceHref,
   hasCompanyEmail,
 } from "@/lib/portalAccess";
 import { getAccessibleWorkspaceLinks } from "@/lib/workspaceCatalog";
@@ -55,27 +56,186 @@ const defaultForm: EmployeeForm = {
   email: "",
   temporaryPassword: "",
   phone: "",
-  role: "AGENT",
-  department: "Customer Support",
+  role: "FIELD_RECRUITER",
+  department: "Talent Acquisition",
   city: "",
   employeeCode: "",
 };
 
-const employeeRoles = [
-  "AGENT",
-  "TEAM_LEAD",
-  "OPERATIONS",
-  "CITY_MANAGER",
-  "STATE_MANAGER",
-  "BUSINESS_HEAD",
-  "HR",
-  "HEAD_HR",
-  "RECRUITER",
-  "ADMIN",
-  "ACCOUNTS",
-  "AUDIT",
-  "FOUNDER",
+const employeeRoleGroups = [
+  {
+    label: "Leadership",
+    roles: [
+      "FOUNDER",
+      "BUSINESS_HEAD",
+      "CHIEF_OPERATING_OFFICER",
+      "CHIEF_FINANCIAL_OFFICER",
+    ],
+  },
+  {
+    label: "HR and Hiring",
+    roles: [
+      "HEAD_HR",
+      "HR",
+      "JR_HR",
+      "HR_INTERN",
+      "HEAD_RECRUITER",
+      "RECRUITER",
+      "FIELD_RECRUITER",
+      "TALENT_ACQUISITION",
+      "CAMPUS_RECRUITER",
+    ],
+  },
+  {
+    label: "Operations",
+    roles: [
+      "STATE_MANAGER",
+      "CITY_MANAGER",
+      "ZONE_MANAGER",
+      "CLUSTER_MANAGER",
+      "OPERATIONS_MANAGER",
+      "OPERATIONS",
+      "OPERATIONS_ADMIN",
+      "SERVICE_HEAD",
+      "DISPATCHER",
+      "SCHEDULING_COORDINATOR",
+      "FIELD_SUPERVISOR",
+    ],
+  },
+  {
+    label: "Finance and Accounts",
+    roles: [
+      "FINANCE_HEAD",
+      "ACCOUNTS_HEAD",
+      "ACCOUNTS",
+      "ACCOUNTANT",
+      "FINANCE",
+      "BILLING",
+      "REFUND_OPS",
+      "PAYOUTS",
+      "COLLECTIONS",
+    ],
+  },
+  {
+    label: "Quality and Compliance",
+    roles: [
+      "QUALITY_HEAD",
+      "QUALITY",
+      "AUDIT",
+      "AUDITOR",
+      "QA",
+      "COMPLIANCE",
+      "TRAINING_MANAGER",
+    ],
+  },
+  {
+    label: "Catalog and Platform Control",
+    roles: [
+      "SUPER_ADMIN",
+      "ADMIN",
+      "CATEGORY_MANAGER",
+      "CATALOG",
+      "PRICING_MANAGER",
+      "GROWTH_MANAGER",
+    ],
+  },
+  {
+    label: "Support and Field Service",
+    roles: [
+      "SUPPORT_LEAD",
+      "TEAM_LEAD",
+      "SENIOR_AGENT",
+      "AGENT",
+      "CALL_AGENT",
+      "CUSTOMER_SUCCESS",
+      "TECHNICIAN",
+      "FIELD_EXECUTIVE",
+      "STAFF",
+    ],
+  },
 ];
+
+function getSuggestedDepartment(role: string) {
+  if (
+    [
+      "HEAD_HR",
+      "HR",
+      "JR_HR",
+      "HR_INTERN",
+      "HEAD_RECRUITER",
+      "RECRUITER",
+      "FIELD_RECRUITER",
+      "TALENT_ACQUISITION",
+      "CAMPUS_RECRUITER",
+    ].includes(role)
+  ) {
+    return "Talent Acquisition";
+  }
+
+  if (
+    [
+      "STATE_MANAGER",
+      "CITY_MANAGER",
+      "ZONE_MANAGER",
+      "CLUSTER_MANAGER",
+      "OPERATIONS_MANAGER",
+      "OPERATIONS",
+      "OPERATIONS_ADMIN",
+      "SERVICE_HEAD",
+      "DISPATCHER",
+      "SCHEDULING_COORDINATOR",
+      "FIELD_SUPERVISOR",
+    ].includes(role)
+  ) {
+    return "Operations";
+  }
+
+  if (
+    [
+      "FINANCE_HEAD",
+      "ACCOUNTS_HEAD",
+      "ACCOUNTS",
+      "ACCOUNTANT",
+      "FINANCE",
+      "BILLING",
+      "REFUND_OPS",
+      "PAYOUTS",
+      "COLLECTIONS",
+    ].includes(role)
+  ) {
+    return "Finance";
+  }
+
+  if (
+    ["QUALITY_HEAD", "QUALITY", "AUDIT", "AUDITOR", "QA", "COMPLIANCE"].includes(
+      role
+    )
+  ) {
+    return "Quality and Compliance";
+  }
+
+  if (
+    ["SUPER_ADMIN", "ADMIN", "CATEGORY_MANAGER", "CATALOG", "PRICING_MANAGER"].includes(
+      role
+    )
+  ) {
+    return "Platform Control";
+  }
+
+  if (
+    ["SUPPORT_LEAD", "TEAM_LEAD", "SENIOR_AGENT", "AGENT", "CALL_AGENT", "CUSTOMER_SUCCESS"].includes(
+      role
+    )
+  ) {
+    return "Customer Support";
+  }
+
+  if (["TECHNICIAN", "FIELD_EXECUTIVE", "STAFF"].includes(role)) {
+    return "Field Service";
+  }
+
+  return "Leadership";
+}
 
 function getSecondaryProvisionerApp() {
   const existing = getApps().find((app) =>
@@ -153,6 +313,18 @@ export default function EmployeeAccessManager() {
     return getAccessibleWorkspaceLinks(draftRecord, form.email).map(
       (item) => item.shortLabel
     );
+  }, [form.email, form.role]);
+
+  const dashboardPathPreview = useMemo(() => {
+    const draftRecord = {
+      role: form.role,
+      email: form.email,
+      active: true,
+      employeeActive: true,
+      employmentStatus: "ACTIVE",
+    };
+
+    return getDefaultWorkspaceHref(draftRecord, form.email);
   }, [form.email, form.role]);
 
   const handleCreateEmployee = async (event: FormEvent<HTMLFormElement>) => {
@@ -329,14 +501,26 @@ export default function EmployeeAccessManager() {
             <select
               value={form.role}
               onChange={(event) =>
-                setForm((current) => ({ ...current, role: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  role: event.target.value,
+                  department:
+                    current.department === getSuggestedDepartment(current.role) ||
+                    !current.department
+                      ? getSuggestedDepartment(event.target.value)
+                      : current.department,
+                }))
               }
               className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
             >
-              {employeeRoles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
+              {employeeRoleGroups.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.roles.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             <input
@@ -428,6 +612,15 @@ export default function EmployeeAccessManager() {
                 No company dashboard access
               </span>
             )}
+          </div>
+
+          <div className="mt-5 rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Landing path
+            </p>
+            <p className="mt-2 text-sm font-medium text-slate-900">
+              {dashboardPathPreview}
+            </p>
           </div>
         </article>
 

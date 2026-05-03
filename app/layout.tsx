@@ -1,16 +1,23 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Manrope } from "next/font/google";
 import Script from "next/script";
 import Navbar from "./components/Navbar";
 import TawkChatWidget from "./components/TawkChatWidget";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "SpeedFix | Premium Home Services",
+  title: "SpeedFix | Home Services",
   description:
-    "Book premium home services with transparent packages, subcategories, cart checkout, and secure payments.",
+    "Professional home services for repairs, cleaning, maintenance, and installations.",
 };
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-sans",
+});
 
 const serviceLinks = [
   {
@@ -52,7 +59,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className={`${manrope.variable} antialiased`}>
         {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
           <Script
             src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
@@ -69,44 +76,41 @@ export default function RootLayout({
           <Navbar />
           <TawkChatWidget />
 
-          <main className="min-h-screen pt-16">{children}</main>
+          <main className="min-h-screen pt-[76px]">{children}</main>
 
-          <footer className="border-t border-white/10 bg-[#07111f] text-white">
-            <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr_0.85fr_0.85fr] lg:px-8">
+          <footer className="border-t border-slate-200 bg-[#07111f] text-white">
+            <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.1fr_0.9fr_0.9fr_0.9fr] lg:px-8">
               <div className="max-w-sm">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl font-semibold tracking-tight">
                     <span className="text-white">Speed</span>
                     <span className="text-[#FF6A00]">Fix</span>
                   </span>
-                  <span className="rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-orange-300">
-                    WELCOME30
-                  </span>
                 </div>
 
                 <p className="mt-5 text-sm leading-7 text-slate-300">
-                  Premium home services with clearer category discovery,
-                  clickable subcategories, cart-first booking, and secure
-                  checkout.
+                  Professional home services for repairs, cleaning, maintenance,
+                  and installations through a structured category and booking flow.
                 </p>
 
                 <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    First booking offer
+                    Customer support
                   </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    30% off on your first booking with coupon `WELCOME30`
+                  <p className="mt-2 text-sm font-medium text-white">
+                    support@speedfix.co.in
                   </p>
+                  <p className="mt-1 text-sm text-slate-300">+91-7439769525</p>
                 </div>
               </div>
 
-              <FooterColumn title="Popular Tasks" links={serviceLinks} />
+              <FooterColumn title="Services" links={serviceLinks} />
               <FooterColumn title="Company" links={companyLinks} />
               <FooterColumn title="Customers" links={customerLinks} />
             </div>
 
             <div className="border-t border-white/10 px-6 py-5 text-center text-xs text-slate-500 lg:px-8">
-              © Copyright {new Date().getFullYear()} SpeedFix.co.in. All rights reserved.
+              {"©"} {new Date().getFullYear()} SpeedFix.co.in. All rights reserved.
             </div>
           </footer>
         </Providers>

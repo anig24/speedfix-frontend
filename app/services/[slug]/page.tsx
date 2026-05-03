@@ -10,10 +10,10 @@ import {
   ChevronRight,
   Clock3,
   ShieldCheck,
-  Sparkles,
   Star,
 } from "lucide-react";
 import ServiceConfigurator from "@/app/components/services/ServiceConfigurator";
+import { getServicePresentation } from "@/app/components/services/servicePresentation";
 import { getServiceBySlug } from "@/lib/serviceCatalog";
 
 const reveal = {
@@ -50,6 +50,9 @@ export default function ServiceCategoryPage() {
     );
   }
 
+  const presentation = getServicePresentation(service.slug, service.image);
+  const ServiceIcon = presentation.icon;
+
   return (
     <div className="bg-[#f6efe4] text-slate-900">
       <section className="relative overflow-hidden border-b border-slate-200/80">
@@ -71,8 +74,8 @@ export default function ServiceCategoryPage() {
               </div>
 
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/85 px-4 py-2 text-sm text-slate-700">
-                <Sparkles className="h-4 w-4 text-orange-500" />
-                Premium category page with task-level discovery
+                <ServiceIcon className="h-4 w-4 text-orange-500" />
+                Category overview
               </div>
 
               <div>
@@ -113,8 +116,8 @@ export default function ServiceCategoryPage() {
                     {service.coverage}
                   </p>
                   <p className="mt-2 text-sm leading-7 text-slate-600">
-                    Built for customers who want premium booking clarity and the
-                    flexibility to go from discovery to checkout quickly.
+                    Open the subcategory you need, compare package levels, and
+                    move into booking without losing context.
                   </p>
                 </div>
 
@@ -132,8 +135,8 @@ export default function ServiceCategoryPage() {
 
               <div className="relative h-[24rem] overflow-hidden rounded-[2rem] premium-card">
                 <Image
-                  src={service.image}
-                  alt={service.name}
+                  src={presentation.image}
+                  alt={`${service.name} category visual`}
                   fill
                   sizes="(max-width: 1024px) 100vw, 55vw"
                   className="object-cover"

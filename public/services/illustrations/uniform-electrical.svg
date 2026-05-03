@@ -1,0 +1,30 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="860" rx="48" fill="#EEF4FA"/>
+  <rect x="48" y="48" width="1184" height="764" rx="36" fill="url(#bg)"/>
+  <rect x="88" y="98" width="410" height="664" rx="34" fill="#FFFDF9"/>
+  <rect x="132" y="150" width="130" height="18" rx="9" fill="#D8E7FF"/>
+  <rect x="132" y="196" width="258" height="18" rx="9" fill="#EBF1F7"/>
+  <rect x="126" y="286" width="332" height="364" rx="28" fill="#0E1D3C"/>
+  <circle cx="289" cy="466" r="110" fill="#17305F"/>
+  <path d="M318 384L259 487H321L278 584" stroke="#FFD34D" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="564" y="96" width="620" height="668" rx="34" fill="#101B34"/>
+  <rect x="610" y="146" width="250" height="154" rx="26" fill="#16294F"/>
+  <rect x="896" y="146" width="242" height="154" rx="26" fill="#16294F"/>
+  <circle cx="724" cy="453" r="70" fill="#F3C29B"/>
+  <path d="M660 426C660 382.922 694.922 348 738 348H801C847.944 348 886 386.056 886 433V618H660V426Z" fill="#152A54"/>
+  <rect x="729" y="456" width="92" height="122" rx="20" fill="#FF6A00"/>
+  <rect x="744" y="472" width="62" height="26" rx="9" fill="#FFF8EE"/>
+  <circle cx="992" cy="466" r="62" fill="#F3C29B"/>
+  <path d="M932 432C932 396.654 960.654 368 996 368H1046C1084.11 368 1115 398.891 1115 437V602H932V432Z" fill="#132342"/>
+  <rect x="966" y="512" width="122" height="22" rx="11" transform="rotate(-35 966 512)" fill="#D9E5F6"/>
+  <rect x="1036" y="458" width="26" height="94" rx="13" transform="rotate(-35 1036 458)" fill="#7EA3E3"/>
+  <rect x="664" y="648" width="434" height="66" rx="22" fill="#FFFDF9"/>
+  <rect x="704" y="673" width="124" height="18" rx="9" fill="#CEDCF0"/>
+  <rect x="858" y="673" width="172" height="18" rx="9" fill="#FFB06B"/>
+  <defs>
+    <linearGradient id="bg" x1="640" y1="48" x2="640" y2="812" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FBFF"/>
+      <stop offset="1" stop-color="#EEF2F8"/>
+    </linearGradient>
+  </defs>
+</svg>

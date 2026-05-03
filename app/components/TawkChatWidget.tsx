@@ -48,10 +48,17 @@ export default function TawkChatWidget() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const propertyId = process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID;
-    const widgetId = process.env.NEXT_PUBLIC_TAWK_WIDGET_ID;
+    const propertyId = process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID?.trim();
+    const widgetId = process.env.NEXT_PUBLIC_TAWK_WIDGET_ID?.trim();
+    const embedUrl =
+      process.env.NEXT_PUBLIC_TAWK_EMBED_URL?.trim() ||
+      (propertyId && widgetId
+        ? `https://embed.tawk.to/${propertyId}/${widgetId}`
+        : propertyId
+          ? `https://embed.tawk.to/${propertyId}/default`
+          : "");
 
-    if (!pathname || !propertyId || !widgetId) {
+    if (!pathname || !embedUrl) {
       return;
     }
 
@@ -94,7 +101,7 @@ export default function TawkChatWidget() {
       const script = document.createElement("script");
       script.id = "speedfix-tawk-widget";
       script.async = true;
-      script.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
+      script.src = embedUrl;
       script.charset = "UTF-8";
       script.setAttribute("crossorigin", "*");
 

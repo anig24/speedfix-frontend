@@ -36,6 +36,9 @@ const ACCOUNTS_ROLES = new Set([
   "FINANCE_HEAD",
   "BILLING",
   "REFUND_OPS",
+  "PAYOUTS",
+  "COLLECTIONS",
+  "CHIEF_FINANCIAL_OFFICER",
 ]);
 
 const AUDIT_ROLES = new Set([
@@ -45,6 +48,8 @@ const AUDIT_ROLES = new Set([
   "QUALITY_AUDIT",
   "QA",
   "COMPLIANCE",
+  "QUALITY_HEAD",
+  "TRAINING_MANAGER",
 ]);
 
 const CATALOG_ROLES = new Set([
@@ -53,6 +58,8 @@ const CATALOG_ROLES = new Set([
   "CATALOG",
   "CATEGORY_MANAGER",
   "PRICING",
+  "PRICING_MANAGER",
+  "GROWTH_MANAGER",
 ]);
 
 const OPERATIONS_ROLES = new Set([
@@ -61,6 +68,13 @@ const OPERATIONS_ROLES = new Set([
   ROLES.STATE_MANAGER,
   "OPERATIONS_ADMIN",
   "SERVICE_HEAD",
+  "ZONE_MANAGER",
+  "CLUSTER_MANAGER",
+  "OPERATIONS_MANAGER",
+  "DISPATCHER",
+  "SCHEDULING_COORDINATOR",
+  "FIELD_SUPERVISOR",
+  "CHIEF_OPERATING_OFFICER",
 ]);
 
 const ALL_ALLOWED_SUBCATEGORIES: AllowedSubcategoryMap = corporateSections.reduce<

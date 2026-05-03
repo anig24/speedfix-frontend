@@ -1,6 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 import { operatingCities } from "@/lib/serviceCatalog";
+
+const reveal = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.2 },
+  transition: { duration: 0.5, ease: "easeOut" as const },
+};
 
 const contactCards = [
   {
@@ -25,29 +35,35 @@ const contactCards = [
 
 export default function ContactPage() {
   return (
-    <div className="bg-[#f6efe4] text-slate-900">
-      <section className="border-b border-slate-200/80">
-        <div className="mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-20">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-            Contact
-          </p>
-          <h1 className="mt-4 display-font text-5xl text-slate-950 md:text-6xl">
-            Talk to SpeedFix support, service, or booking teams
-          </h1>
-          <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
-            Use the contact options below for service help, booking questions,
-            pricing clarifications, or customer support follow-ups.
-          </p>
+    <div className="public-shell text-slate-900">
+      <section className="relative overflow-hidden border-b border-slate-200/80">
+        <div className="hero-grid absolute inset-0 opacity-70" />
+        <div className="public-hero-glow absolute inset-x-0 top-0 h-[28rem]" />
+
+        <div className="relative mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-20">
+          <motion.div {...reveal} className="max-w-4xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+              Contact
+            </p>
+            <h1 className="mt-4 display-font text-5xl text-slate-950 md:text-6xl">
+              Contact SpeedFix
+            </h1>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
+              Reach out for service help, booking questions, pricing
+              clarifications, or post-booking customer support.
+            </p>
+          </motion.div>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-16 lg:px-8">
         <div className="grid gap-6 md:grid-cols-3">
           {contactCards.map(({ title, value, href, icon: Icon }) => (
-            <a
+            <motion.a
               key={title}
+              {...reveal}
               href={href}
-              className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card transition hover:-translate-y-1"
+              className="surface-panel lift-card rounded-[2rem] border border-slate-200 p-6"
             >
               <div className="inline-flex rounded-2xl bg-[#fff2df] p-3 text-orange-500">
                 <Icon className="h-5 w-5" />
@@ -56,12 +72,15 @@ export default function ContactPage() {
                 {title}
               </h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">{value}</p>
-            </a>
+            </motion.a>
           ))}
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card">
+          <motion.div
+            {...reveal}
+            className="surface-panel rounded-[2rem] border border-slate-200 p-6"
+          >
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
               Operating cities
             </p>
@@ -75,16 +94,19 @@ export default function ContactPage() {
                 </span>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="rounded-[2rem] border border-slate-200 bg-slate-950 p-6 text-white premium-card">
+          <motion.div
+            {...reveal}
+            className="dark-panel rounded-[2rem] p-6 text-white"
+          >
             <div className="inline-flex rounded-2xl bg-white/10 p-3 text-orange-400">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <h2 className="mt-5 text-2xl font-semibold">Need to book now?</h2>
             <p className="mt-3 text-sm leading-7 text-slate-300">
               Browse services, select the right subcategory, add to cart, and
-              complete checkout with address and payment.
+              complete checkout with a cleaner premium booking flow.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -100,7 +122,7 @@ export default function ContactPage() {
                 View cart
               </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>

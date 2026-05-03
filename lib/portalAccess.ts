@@ -32,6 +32,7 @@ const HR_ROLES = new Set([
   "HEAD_HR",
   "JR_HR",
   "HR_INTERN",
+  "CAMPUS_RECRUITER",
   "RECRUITER",
   "FIELD_RECRUITER",
   "HEAD_RECRUITER",
@@ -43,6 +44,7 @@ const RECRUITER_ROLES = new Set([
   "FIELD_RECRUITER",
   "HEAD_RECRUITER",
   "TALENT_ACQUISITION",
+  "CAMPUS_RECRUITER",
 ]);
 
 const ADMIN_ROLES = new Set([
@@ -54,6 +56,16 @@ const ADMIN_ROLES = new Set([
   ROLES.OPERATIONS,
   "OPERATIONS_ADMIN",
   "SERVICE_HEAD",
+  "CATEGORY_MANAGER",
+  "CATALOG",
+  "PRICING_MANAGER",
+  "GROWTH_MANAGER",
+  "ZONE_MANAGER",
+  "CLUSTER_MANAGER",
+  "OPERATIONS_MANAGER",
+  "DISPATCHER",
+  "SCHEDULING_COORDINATOR",
+  "FIELD_SUPERVISOR",
 ]);
 
 const ACCOUNTS_ROLES = new Set([
@@ -64,6 +76,9 @@ const ACCOUNTS_ROLES = new Set([
   "FINANCE_HEAD",
   "BILLING",
   "REFUND_OPS",
+  "PAYOUTS",
+  "COLLECTIONS",
+  "CHIEF_FINANCIAL_OFFICER",
 ]);
 
 const AUDIT_ROLES = new Set([
@@ -73,6 +88,8 @@ const AUDIT_ROLES = new Set([
   "QUALITY_AUDIT",
   "QA",
   "COMPLIANCE",
+  "QUALITY_HEAD",
+  "TRAINING_MANAGER",
 ]);
 
 export function normalizeRole(value: unknown) {
@@ -252,6 +269,10 @@ export function getCorporateHomeHref(
   const role = normalizeRole(user.role);
   const email = emailOverride ?? user.email;
 
+  if (role === ROLES.FOUNDER || role === ROLES.BUSINESS_HEAD) {
+    return "/corporate/command-center/daily-brief";
+  }
+
   if (hasHrIdentity(email, role)) {
     if (hasRecruiterIdentity(email, role)) {
       return "/corporate/hr/recruiter-desk";
@@ -275,13 +296,15 @@ export function getCorporateHomeHref(
   if (
     role === ROLES.OPERATIONS ||
     role === ROLES.CITY_MANAGER ||
-    role === ROLES.STATE_MANAGER
+    role === ROLES.STATE_MANAGER ||
+    role === "ZONE_MANAGER" ||
+    role === "CLUSTER_MANAGER" ||
+    role === "OPERATIONS_MANAGER" ||
+    role === "DISPATCHER" ||
+    role === "SCHEDULING_COORDINATOR" ||
+    role === "FIELD_SUPERVISOR"
   ) {
     return "/corporate/operations/bookings-desk";
-  }
-
-  if (role === ROLES.FOUNDER || role === ROLES.BUSINESS_HEAD) {
-    return "/corporate/command-center/daily-brief";
   }
 
   return "/corporate";

@@ -18,21 +18,21 @@ export default async function CorporateSectionPage({
 
   return (
     <div className="space-y-8">
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
           {cleanCopy(section.eyebrow)}
         </p>
-        <h2 className="mt-3 text-4xl font-semibold text-white">
+        <h2 className="mt-3 text-4xl font-semibold text-slate-950">
           {cleanCopy(section.title)}
         </h2>
-        <p className="mt-4 max-w-3xl text-sm leading-8 text-slate-300">
+        <p className="mt-4 max-w-3xl text-sm leading-8 text-slate-600">
           {cleanCopy(section.description)}
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
           {section.summaryStats.map((stat) => (
             <span
               key={stat}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300"
+              className="rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600"
             >
               {cleanCopy(stat)}
             </span>
@@ -44,15 +44,15 @@ export default async function CorporateSectionPage({
         {section.subcategories.map((subcategory) => (
           <article
             key={subcategory.slug}
-            className="rounded-[2rem] border border-white/10 bg-white/5 p-6"
+            className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               Workflow lane
             </p>
-            <h3 className="mt-3 text-2xl font-semibold text-white">
+            <h3 className="mt-3 text-2xl font-semibold text-slate-950">
               {cleanCopy(subcategory.title)}
             </h3>
-            <p className="mt-3 text-sm leading-7 text-slate-300">
+            <p className="mt-3 text-sm leading-7 text-slate-600">
               {cleanCopy(subcategory.description)}
             </p>
 
@@ -60,7 +60,7 @@ export default async function CorporateSectionPage({
               {subcategory.responsibilities.map((item) => (
                 <div
                   key={item}
-                  className="rounded-[1.2rem] bg-[#0c1424] px-4 py-3 text-sm text-slate-300"
+                  className="rounded-[1.2rem] bg-slate-50 px-4 py-3 text-sm text-slate-600"
                 >
                   {cleanCopy(item)}
                 </div>
@@ -69,7 +69,7 @@ export default async function CorporateSectionPage({
 
             <Link
               href={`/corporate/${section.slug}/${subcategory.slug}`}
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               Open workflow
               <ArrowRight className="h-4 w-4" />

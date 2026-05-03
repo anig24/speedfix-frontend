@@ -213,43 +213,47 @@ export default function CorporateShell({ children }: CorporateShellProps) {
 
   return (
     <CorporateAccessProvider value={contextValue}>
-      <div className="min-h-screen bg-[#f3f5f9] text-slate-900">
-        <div className="grid min-h-screen xl:grid-cols-[308px_1fr]">
-          <aside className="border-b border-slate-200 bg-white px-6 py-8 shadow-sm xl:border-b-0 xl:border-r">
+      <div className="min-h-screen bg-[#edf2f8] text-slate-900">
+        <div className="grid min-h-screen xl:grid-cols-[320px_1fr]">
+          <aside className="border-b border-white/10 bg-[#07111f] px-6 py-8 text-white shadow-[0_28px_80px_rgba(2,10,24,0.28)] xl:border-b-0 xl:border-r">
             <Link href="/corporate" className="inline-flex items-center gap-3">
-              <span className="text-2xl font-semibold tracking-tight text-slate-950">
-                <span className="text-slate-950">Speed</span>
+              <span className="text-2xl font-semibold tracking-tight text-white">
+                <span className="text-white">Speed</span>
                 <span className="text-[#FF6A00]">Fix</span>
               </span>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600">
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-300">
                 Corporate
               </span>
             </Link>
 
-            <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <div className="mt-8 rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
                 Active employee
               </p>
-              <h2 className="mt-3 text-xl font-semibold text-slate-950">
+              <h2 className="mt-3 text-xl font-semibold text-white">
                 {profile.name}
               </h2>
-              <p className="mt-1 text-sm text-slate-600">{profile.email}</p>
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+              <p className="mt-1 text-sm text-white/62">{profile.email}</p>
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/12 px-3 py-2 text-xs font-medium text-emerald-300">
                 <ShieldCheck className="h-4 w-4" />
                 {profile.role}
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <SidebarMetric label="Lanes" value={`${sections.length}`} />
+                <SidebarMetric label="Tools" value={`${quickLinks.length}`} />
               </div>
             </div>
 
             <div className="mt-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
                 Role workspace
               </p>
               <Link
                 href={scope.homeHref}
                 className={`mt-4 flex items-center justify-between rounded-2xl px-4 py-3 text-sm transition ${
                   pathname === "/corporate"
-                    ? "bg-slate-950 text-white"
-                    : "bg-slate-50 text-slate-800 hover:bg-slate-100"
+                    ? "bg-white text-slate-950"
+                    : "bg-white/5 text-white/88 hover:bg-white/10"
                 }`}
               >
                 <span>{scope.label}</span>
@@ -266,8 +270,8 @@ export default function CorporateShell({ children }: CorporateShellProps) {
                       href={`/corporate/${section.slug}`}
                       className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm transition ${
                         active
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-slate-50"
+                          ? "bg-[#13233b] text-white"
+                          : "text-white/72 hover:bg-white/6 hover:text-white"
                       }`}
                     >
                       <span className="flex items-center gap-3">
@@ -282,8 +286,8 @@ export default function CorporateShell({ children }: CorporateShellProps) {
             </div>
 
             {quickLinks.length > 0 && (
-              <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <div className="mt-8 rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
                   Role options
                 </p>
                 <div className="mt-4 grid gap-3">
@@ -294,13 +298,13 @@ export default function CorporateShell({ children }: CorporateShellProps) {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-slate-300 hover:bg-white"
+                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/82 transition hover:border-white/15 hover:bg-white/10"
                       >
                         <span className="flex items-center gap-3">
-                          <Icon className="h-4 w-4 text-slate-500" />
+                          <Icon className="h-4 w-4 text-white/45" />
                           {item.title}
                         </span>
-                        <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                        <ArrowUpRight className="h-4 w-4 text-white/40" />
                       </Link>
                     );
                   })}
@@ -317,9 +321,9 @@ export default function CorporateShell({ children }: CorporateShellProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-950"
+                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm text-white/60 transition hover:bg-white/6 hover:text-white"
                     >
-                      <Icon className="h-4 w-4 text-slate-400" />
+                      <Icon className="h-4 w-4 text-white/35" />
                       {item.label}
                     </Link>
                   );
@@ -329,7 +333,7 @@ export default function CorporateShell({ children }: CorporateShellProps) {
 
             <button
               onClick={handleLogout}
-              className="mt-8 flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              className="mt-8 flex w-full items-center justify-center gap-2 rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/8"
             >
               <LogOut className="h-4 w-4" />
               Sign out
@@ -337,8 +341,8 @@ export default function CorporateShell({ children }: CorporateShellProps) {
           </aside>
 
           <div className="flex min-h-screen flex-col">
-            <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-6 py-5 backdrop-blur">
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/88 px-6 py-5 backdrop-blur">
+              <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                     {scope.badge}
@@ -352,6 +356,8 @@ export default function CorporateShell({ children }: CorporateShellProps) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
+                  <ToplineMetric label="Sections" value={`${sections.length}`} />
+                  <ToplineMetric label="Role tools" value={`${quickLinks.length}`} />
                   <EmployeeHierarchyPanel
                     currentEmail={profile.email}
                     currentRole={profile.roleKey}
@@ -369,10 +375,30 @@ export default function CorporateShell({ children }: CorporateShellProps) {
               </div>
             </header>
 
-            <main className="flex-1 px-6 py-8">{children}</main>
+            <main className="dashboard-grid flex-1 px-6 py-8">{children}</main>
           </div>
         </div>
       </div>
     </CorporateAccessProvider>
+  );
+}
+
+function SidebarMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[1.15rem] border border-white/10 bg-[#0c1a31] px-3 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/42">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function ToplineMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">
+      <span className="font-semibold text-slate-950">{value}</span>
+      <span className="ml-2 text-slate-500">{label}</span>
+    </div>
   );
 }

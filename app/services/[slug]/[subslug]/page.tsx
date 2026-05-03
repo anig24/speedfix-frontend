@@ -9,11 +9,11 @@ import {
   BadgeCheck,
   ChevronRight,
   Clock3,
-  Sparkles,
   Star,
   TriangleAlert,
 } from "lucide-react";
 import ServiceConfigurator from "@/app/components/services/ServiceConfigurator";
+import { getServicePresentation } from "@/app/components/services/servicePresentation";
 import { getServiceSubcategory } from "@/lib/serviceCatalog";
 
 const reveal = {
@@ -57,6 +57,8 @@ export default function ServiceSubcategoryPage() {
   const recommendedPackage =
     service.packages.find((pkg) => pkg.name === subcategory.recommendedPackage) ||
     service.packages[0];
+  const presentation = getServicePresentation(service.slug, service.image);
+  const ServiceIcon = presentation.icon;
 
   return (
     <div className="bg-[#f6efe4] text-slate-900">
@@ -86,8 +88,8 @@ export default function ServiceSubcategoryPage() {
               </div>
 
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/85 px-4 py-2 text-sm text-slate-700">
-                <Sparkles className="h-4 w-4 text-orange-500" />
-                Task page with a proper add-to-cart flow
+                <ServiceIcon className="h-4 w-4 text-orange-500" />
+                Task detail
               </div>
 
               <div>
@@ -157,8 +159,8 @@ export default function ServiceSubcategoryPage() {
 
               <div className="relative h-[24rem] overflow-hidden rounded-[2rem] premium-card">
                 <Image
-                  src={service.image}
-                  alt={subcategory.name}
+                  src={presentation.image}
+                  alt={`${subcategory.name} service visual`}
                   fill
                   sizes="(max-width: 1024px) 100vw, 55vw"
                   className="object-cover"

@@ -17,9 +17,10 @@ export default function CareersPage() {
   const { isAuthorized } = useCareerPostingAccess();
 
   return (
-    <div className="bg-[#f6efe4] text-slate-900">
+    <div className="public-shell text-slate-900">
       <section className="relative overflow-hidden border-b border-slate-200/80">
-        <div className="absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top_left,_rgba(255,106,0,0.18),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(15,23,42,0.13),_transparent_36%)]" />
+        <div className="hero-grid absolute inset-0 opacity-70" />
+        <div className="public-hero-glow absolute inset-x-0 top-0 h-[32rem]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
           <motion.div {...reveal} className="max-w-4xl">
@@ -29,7 +30,7 @@ export default function CareersPage() {
             </div>
 
             <h1 className="mt-5 display-font text-5xl leading-tight text-slate-950 md:text-6xl">
-              Join the team building a more premium home services experience.
+              Careers
             </h1>
 
             <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
@@ -69,7 +70,7 @@ export default function CareersPage() {
             ].map(([value, label]) => (
               <div
                 key={label}
-                className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 premium-card"
+                className="surface-panel rounded-[2rem] border border-slate-200 p-6"
               >
                 <p className="display-font text-4xl text-slate-950">{value}</p>
                 <p className="mt-2 text-sm text-slate-500">{label}</p>
@@ -100,10 +101,10 @@ export default function CareersPage() {
             <motion.article
               key={role.slug}
               {...reveal}
-              className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card"
+              className="surface-panel lift-card rounded-[2rem] border border-slate-200 p-6"
             >
               <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                <span className="rounded-full bg-slate-100 px-3 py-2">
+                <span className="rounded-full bg-slate-100 px-3 py-2 text-slate-700">
                   {role.team}
                 </span>
                 <span className="rounded-full bg-[#fff2df] px-3 py-2 text-orange-700">
@@ -161,7 +162,7 @@ export default function CareersPage() {
               <motion.article
                 key={item.title}
                 {...reveal}
-                className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card"
+                className="surface-panel rounded-[2rem] border border-slate-200 p-6"
               >
                 <h3 className="text-2xl font-semibold text-slate-950">
                   {item.title}

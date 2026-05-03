@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import CitySection from "@/app/components/CitySection";
-import { writeStoredCity, writeStoredLocation } from "@/lib/locationStorage";
+import {
+  detectAndStoreCurrentCity,
+  normalizeCityLabel,
+  writeStoredCity,
+} from "@/lib/locationStorage";
 
 export default function LocationGate({ onClose }: { onClose: () => void }) {
   const [pincode, setPincode] = useState("");
@@ -11,47 +15,34 @@ export default function LocationGate({ onClose }: { onClose: () => void }) {
   const detectLocation = () => {
     setLoading(true);
 
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const { latitude, longitude } = pos.coords;
-
-      try {
-        const res = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-        );
-
-        const data = await res.json();
-        const city = data.city || data.locality || "Unknown";
-
-        writeStoredLocation(city, {
-          latitude,
-          longitude,
-        });
+    detectAndStoreCurrentCity()
+      .then(() => {
         onClose();
-      } catch {
+      })
+      .catch(() => {
         alert("Failed to detect location");
-      }
-
-      setLoading(false);
-    });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const handlePincode = async () => {
-    if (!pincode) return;
+    if (!pincode) {
+      return;
+    }
 
     setLoading(true);
 
     try {
-      const res = await fetch(
-        `https://api.postalpincode.in/pincode/${pincode}`
-      );
+      const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
       const data = await res.json();
 
       if (data[0].Status === "Success") {
-        const city = data[0].PostOffice[0].District;
+        const city = normalizeCityLabel(data[0].PostOffice[0].District);
 
         writeStoredCity(city);
         localStorage.setItem("pincode", pincode);
-
         onClose();
       } else {
         alert("Invalid pincode");
@@ -65,51 +56,53 @@ export default function LocationGate({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-center items-start pt-20"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-20 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-[#0F172A] w-full max-w-md rounded-xl shadow-xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg overflow-hidden rounded-[1.9rem] border border-white/10 bg-[#0b1528] shadow-[0_30px_80px_rgba(2,10,24,0.48)]"
+        onClick={(event) => event.stopPropagation()}
       >
-        {/* TOP */}
-        <div className="p-5 border-b border-white/10">
-
-          <h2 className="text-lg text-white font-semibold mb-3 text-center">
-            Select Location
+        <div className="border-b border-white/10 p-6">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-white/45">
+            Location access
+          </p>
+          <h2 className="mt-3 text-center text-2xl font-semibold text-white">
+            Set your service city
           </h2>
+          <p className="mt-2 text-center text-sm leading-6 text-white/60">
+            Allow location access for auto-detection, search by pincode, or
+            select a city manually.
+          </p>
 
           <button
             onClick={detectLocation}
-            className="w-full bg-[#FF6A00] text-white py-2.5 rounded mb-3 text-sm"
+            className="pulse-border mt-5 w-full rounded-full bg-[#FF6A00] py-3 text-sm font-semibold text-white transition hover:brightness-110"
           >
-            {loading ? "Detecting..." : "📍 Use Current Location"}
+            {loading ? "Detecting..." : "Use Current Location"}
           </button>
 
-          <div className="flex gap-2">
+          <div className="mt-3 flex gap-2">
             <input
               type="text"
               placeholder="Enter pincode"
               value={pincode}
-              onChange={(e) => setPincode(e.target.value)}
-              className="flex-1 px-3 py-2 rounded text-black text-sm"
+              onChange={(event) => setPincode(event.target.value)}
+              className="flex-1 rounded-full border border-white/10 bg-white/95 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-300"
             />
 
             <button
               onClick={handlePincode}
-              className="bg-white text-black px-4 rounded text-sm"
+              className="rounded-full bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
             >
               Go
             </button>
           </div>
-
         </div>
 
-        {/* CITY LIST */}
-        <div className="max-h-[300px] overflow-y-auto">
+        <div className="max-h-[360px] overflow-y-auto">
           <CitySection onSelect={onClose} />
         </div>
-
       </div>
     </div>
   );

@@ -12,7 +12,9 @@ import {
   getAgentRoleLabel,
   isActiveAgentUser,
 } from "@/lib/agentAuth";
+import { normalizeRole } from "@/lib/portalAccess";
 import { agentQuickLinks } from "@/lib/agentPortal";
+import EmployeeHierarchyPanel from "@/app/components/employee/EmployeeHierarchyPanel";
 
 type AgentShellProps = {
   children: ReactNode;
@@ -22,6 +24,7 @@ type AgentProfile = {
   name?: string;
   email?: string;
   role?: string;
+  roleKey?: string;
 };
 
 async function clearAgentSession() {
@@ -65,6 +68,7 @@ export default function AgentShell({ children }: AgentShellProps) {
         name: typeof data?.name === "string" ? data.name : user.displayName || "SpeedFix Agent",
         email: typeof data?.email === "string" ? data.email : user.email || "",
         role: getAgentRoleLabel(data?.role),
+        roleKey: normalizeRole(data?.role),
       });
       setLoading(false);
     });
@@ -158,16 +162,27 @@ export default function AgentShell({ children }: AgentShellProps) {
 
         <div className="flex min-h-screen flex-col">
           <header className="border-b border-slate-200 bg-white/90 px-6 py-5 backdrop-blur">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-              Agent workspace
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold text-slate-950">
-              Customer calls and daily support execution
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-              This portal is only for agents handling calls, customer follow-ups,
-              booking clarifications, and escalation handoff.
-            </p>
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Agent workspace
+                </p>
+                <h1 className="mt-2 text-2xl font-semibold text-slate-950">
+                  Customer calls and daily support execution
+                </h1>
+                <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+                  This portal is only for agents handling calls, customer follow-ups,
+                  booking clarifications, and escalation handoff.
+                </p>
+              </div>
+
+              {profile.roleKey && profile.email && (
+                <EmployeeHierarchyPanel
+                  currentEmail={profile.email}
+                  currentRole={profile.roleKey}
+                />
+              )}
+            </div>
           </header>
 
           <main className="flex-1 px-6 py-8">{children}</main>

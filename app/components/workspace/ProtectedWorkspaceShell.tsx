@@ -11,6 +11,7 @@ import {
   canAccessWorkspace,
   formatRoleLabel,
   getDefaultWorkspaceHref,
+  normalizeRole,
   type WorkspaceKey,
 } from "@/lib/portalAccess";
 import {
@@ -18,6 +19,7 @@ import {
   workspaceBlueprints,
   workspaceNavigation,
 } from "@/lib/workspaceCatalog";
+import EmployeeHierarchyPanel from "@/app/components/employee/EmployeeHierarchyPanel";
 
 type ProtectedWorkspaceShellProps = {
   workspace: WorkspaceKey;
@@ -28,6 +30,7 @@ type WorkspaceProfile = {
   name: string;
   email: string;
   role: string;
+  roleKey: string;
 };
 
 export default function ProtectedWorkspaceShell({
@@ -82,6 +85,7 @@ export default function ProtectedWorkspaceShell({
             ? data.email
             : user.email || "",
         role: formatRoleLabel(data.role),
+        roleKey: normalizeRole(data.role),
       });
       setLoading(false);
     });
@@ -180,15 +184,26 @@ export default function ProtectedWorkspaceShell({
 
         <div className="flex min-h-screen flex-col">
           <header className="border-b border-slate-200 bg-white/90 px-6 py-5 backdrop-blur">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-              {currentBlueprint.badge}
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold text-slate-950">
-              {currentWorkspace.label}
-            </h1>
-            <p className="mt-2 max-w-4xl text-sm leading-7 text-slate-600">
-              {currentBlueprint.description}
-            </p>
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  {currentBlueprint.badge}
+                </p>
+                <h1 className="mt-2 text-2xl font-semibold text-slate-950">
+                  {currentWorkspace.label}
+                </h1>
+                <p className="mt-2 max-w-4xl text-sm leading-7 text-slate-600">
+                  {currentBlueprint.description}
+                </p>
+              </div>
+
+              {workspace !== "customer" && (
+                <EmployeeHierarchyPanel
+                  currentEmail={profile.email}
+                  currentRole={profile.roleKey}
+                />
+              )}
+            </div>
           </header>
 
           <main className="flex-1 px-6 py-8">{children}</main>

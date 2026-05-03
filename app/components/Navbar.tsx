@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   useEffect,
   useMemo,
@@ -32,6 +33,9 @@ import { auth, db } from "@/lib/firebase";
 import LocationGate from "@/app/components/LocationGate";
 import { getCartCount, readCart, subscribeToCart } from "@/lib/cart";
 import {
+  detectAndStoreCurrentCity,
+  hasAttemptedCityAutoDetect,
+  markCityAutoDetectAttempted,
   readStoredCity,
   subscribeToStoredCity,
 } from "@/lib/locationStorage";
@@ -87,6 +91,7 @@ const customerLinks = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [showLocation, setShowLocation] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -102,6 +107,23 @@ export default function Navbar() {
     () => getCartCount(readCart()),
     () => 0
   );
+
+  useEffect(() => {
+    const isInternalRoute =
+      pathname?.startsWith("/corporate") ||
+      pathname?.startsWith("/agent") ||
+      pathname?.startsWith("/admin") ||
+      pathname?.startsWith("/dashboard") ||
+      pathname?.startsWith("/support");
+
+    if (city || isInternalRoute || hasAttemptedCityAutoDetect()) {
+      return;
+    }
+
+    markCityAutoDetectAttempted();
+
+    detectAndStoreCurrentCity().catch(() => undefined);
+  }, [city, pathname]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (nextUser) => {
@@ -258,54 +280,54 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#06101d]/75">
-        <div className="glass-panel mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6 lg:px-8">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/8 bg-[#07111f] shadow-[0_14px_40px_rgba(2,10,24,0.28)]">
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="mx-auto flex h-[76px] max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8"
+        >
           <Link href="/" className="flex items-center gap-2 text-white">
-            <span className="text-2xl font-semibold tracking-tight">
+            <span className="text-2xl font-semibold tracking-tight text-glow">
               <span className="text-white">Speed</span>
               <span className="text-[#FF6A00]">Fix</span>
             </span>
-            {hasPremiumBadge && (
-              <span className="rounded-full bg-[#e9d8bf] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#6f5739]">
-                Premium
-              </span>
-            )}
           </Link>
 
-          <nav className="hidden items-center justify-center gap-1 md:flex">
+          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 lg:flex">
             {primaryLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-full px-4 py-2 text-sm font-medium text-white/78 transition hover:bg-white/6 hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/8 hover:text-white"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center justify-end gap-2 sm:gap-3">
+          <div className="ml-auto flex items-center justify-end gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => setShowLocation(true)}
-              className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/85 transition hover:border-white/20 hover:bg-white/8 sm:inline-flex"
+              className="hidden items-center gap-2 rounded-full border border-white/20 bg-[#122238] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45] sm:inline-flex"
             >
               <MapPin className="h-4 w-4 text-orange-400" />
               {city || "Choose city"}
             </button>
 
             {bookingStatus && (
-              <div className="hidden rounded-full bg-orange-500/10 px-3 py-2 text-xs font-semibold text-orange-300 lg:block">
+              <div className="hidden rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-2 text-xs font-semibold text-orange-200 lg:block">
                 {bookingStatus}
               </div>
             )}
 
             <Link
               href="/cart"
-              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:border-white/20 hover:bg-white/8"
+              className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-[#122238] text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45]"
               aria-label="View cart"
             >
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingBag className="h-4 w-4 text-white" />
               {cartCount > 0 && (
                 <span className="absolute -right-1 -top-1 inline-flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
                   {cartCount}
@@ -321,10 +343,10 @@ export default function Navbar() {
                     setNotifOpen((open) => !open);
                     setMenuOpen(false);
                   }}
-                  className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:border-white/20 hover:bg-white/8"
+                  className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-[#122238] text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45]"
                   aria-label="Notifications"
                 >
-                  <Bell className="h-4 w-4" />
+                  <Bell className="h-4 w-4 text-white" />
                   {notifications.length > 0 && (
                     <span className="absolute -right-1 -top-1 inline-flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
                       {notifications.length}
@@ -338,7 +360,7 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
-                      className="absolute right-0 mt-3 w-80 overflow-hidden rounded-[1.4rem] border border-white/10 bg-[#07111f] shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
+                      className="absolute right-0 mt-3 w-80 overflow-hidden rounded-[1.4rem] border border-white/10 bg-[#0b1527]/98 shadow-[0_24px_80px_rgba(2,10,24,0.48)] backdrop-blur-xl"
                     >
                       <div className="border-b border-white/10 px-4 py-3">
                         <p className="text-sm font-semibold text-white">
@@ -348,14 +370,14 @@ export default function Navbar() {
 
                       <div className="max-h-80 overflow-y-auto">
                         {notifications.length === 0 ? (
-                          <p className="px-4 py-4 text-sm text-white/55">
+                          <p className="px-4 py-4 text-sm text-white/60">
                             No notifications right now.
                           </p>
                         ) : (
                           notifications.map((notification) => (
                             <div
                               key={notification.id}
-                              className="border-b border-white/5 px-4 py-3 text-sm text-white/75"
+                              className="border-b border-white/6 px-4 py-3 text-sm text-white/72"
                             >
                               {notification.message}
                             </div>
@@ -376,7 +398,7 @@ export default function Navbar() {
                     setMenuOpen((open) => !open);
                     setNotifOpen(false);
                   }}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white shadow-[0_10px_28px_rgba(255,106,0,0.4)]"
                   aria-label="Open user menu"
                 >
                   {userInitial}
@@ -388,20 +410,20 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
-                      className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#07111f] shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
+                      className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#0b1527]/98 shadow-[0_24px_80px_rgba(2,10,24,0.48)] backdrop-blur-xl"
                     >
                       <div className="border-b border-white/10 px-4 py-4">
                         <p className="text-sm font-semibold text-white">
                           {user.email}
                         </p>
-                        <p className="mt-1 text-xs text-white/55">
+                        <p className="mt-1 text-xs text-white/60">
                           {hasPremiumBadge ? "Premium member account" : "Customer account"}
                         </p>
                       </div>
 
                       {workspaceLinks.length > 0 && (
                         <div className="border-b border-white/10 px-2 py-2">
-                          <p className="px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/45">
+                          <p className="px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">
                             Dashboards
                           </p>
                           {workspaceLinks.map((item) => (
@@ -432,7 +454,7 @@ export default function Navbar() {
                         <button
                           type="button"
                           onClick={handleLogout}
-                          className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium text-rose-300 transition hover:bg-rose-500/10"
+                          className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium text-rose-300 transition hover:bg-white/6"
                         >
                           <LogOut className="h-4 w-4" />
                           Logout
@@ -446,13 +468,13 @@ export default function Navbar() {
               <div className="hidden items-center gap-2 sm:flex">
                 <Link
                   href="/auth/login"
-                  className="rounded-full px-4 py-2 text-sm font-medium text-white/78 transition hover:text-white"
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-white/92 transition hover:text-white"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/auth/login"
-                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+                  className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-[0_12px_24px_rgba(255,255,255,0.08)] transition hover:bg-slate-100"
                 >
                   Get started
                 </Link>
@@ -466,13 +488,13 @@ export default function Navbar() {
                 setMenuOpen(false);
                 setNotifOpen(false);
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:border-white/20 hover:bg-white/8 md:hidden"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/84 transition hover:border-white/20 hover:bg-white/[0.08] md:hidden"
               aria-label="Open mobile menu"
             >
               {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
-        </div>
+        </motion.div>
       </header>
 
       <AnimatePresence>
@@ -481,7 +503,7 @@ export default function Navbar() {
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-white/10 bg-[#06101d] px-6 py-6 shadow-[0_24px_80px_rgba(0,0,0,0.4)] md:hidden"
+            className="fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-white/10 bg-[#081423] px-6 py-6 text-white shadow-[0_24px_80px_rgba(2,10,24,0.48)] md:hidden"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -489,16 +511,11 @@ export default function Navbar() {
                   <span className="text-white">Speed</span>
                   <span className="text-[#FF6A00]">Fix</span>
                 </p>
-                {hasPremiumBadge && (
-                  <span className="rounded-full bg-[#e9d8bf] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#6f5739]">
-                    Premium
-                  </span>
-                )}
               </div>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/4 text-white/80"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -510,7 +527,7 @@ export default function Navbar() {
                 setShowLocation(true);
                 setMobileOpen(false);
               }}
-              className="mt-6 flex w-full items-center gap-2 rounded-[1.2rem] border border-white/10 bg-white/5 px-4 py-3 text-left text-sm text-white/85"
+              className="mt-6 flex w-full items-center gap-2 rounded-[1.2rem] border border-white/12 bg-white/4 px-4 py-3 text-left text-sm text-white/82"
             >
               <MapPin className="h-4 w-4 text-orange-400" />
               {city || "Choose city"}
@@ -522,7 +539,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded-[1.1rem] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85"
+                  className="block rounded-[1.1rem] border border-white/12 bg-white/4 px-4 py-3 text-sm font-medium text-white/84"
                 >
                   {link.label}
                 </Link>
@@ -531,14 +548,14 @@ export default function Navbar() {
               <Link
                 href="/cart"
                 onClick={() => setMobileOpen(false)}
-                className="block rounded-[1.1rem] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85"
+                className="block rounded-[1.1rem] border border-white/12 bg-white/4 px-4 py-3 text-sm font-medium text-white/84"
               >
                 Cart ({cartCount})
               </Link>
             </div>
 
             {user ? (
-              <div className="mt-8 rounded-[1.4rem] border border-white/10 bg-white/5 p-4">
+              <div className="mt-8 rounded-[1.4rem] border border-white/10 bg-white/4 p-4">
                 <p className="text-sm font-semibold text-white">{user.email}</p>
                 <div className="mt-4 space-y-2">
                   {workspaceLinks.map((item) => (
@@ -565,7 +582,7 @@ export default function Navbar() {
                       setMobileOpen(false);
                       handleLogout();
                     }}
-                    className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium text-rose-300 transition hover:bg-rose-500/10"
+                    className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium text-rose-300 transition hover:bg-white/6"
                   >
                     <LogOut className="h-4 w-4" />
                     Logout
@@ -577,7 +594,7 @@ export default function Navbar() {
                 <Link
                   href="/auth/login"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-full border border-white/12 px-4 py-3 text-center text-sm font-medium text-white"
+                  className="rounded-full border border-white/12 px-4 py-3 text-center text-sm font-medium text-white/88"
                 >
                   Sign in
                 </Link>
