@@ -35,8 +35,12 @@ import {
   type WorkerDashboardActionKey,
   type WorkerOnboardingStepKey,
 } from "@/lib/workerPortal";
-import WorkerTrackingMap from "@/app/components/WorkerTrackingMap";
 
+import dynamic from "next/dynamic";
+const WorkerTrackingMap = dynamic(
+  () => import("@/app/components/WorkerTrackingMap"),
+  { ssr: false }
+);
 type ApiState = {
   type: "idle" | "success" | "error" | "info";
   message: string;
