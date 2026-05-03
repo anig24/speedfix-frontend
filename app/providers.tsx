@@ -7,9 +7,15 @@ export default function Providers({
 }: {
   children: React.ReactNode;
 }) {
+  const reCaptchaKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+  if (!reCaptchaKey) {
+    return <>{children}</>;
+  }
+
   return (
     <GoogleReCaptchaProvider
-      reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+      reCaptchaKey={reCaptchaKey}
       scriptProps={{
         async: true,
         defer: true,

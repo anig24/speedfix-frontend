@@ -4,6 +4,7 @@ export type BookingTimelineKey =
   | "PAY_LATER_SELECTED"
   | "TECHNICIAN_PENDING"
   | "TECHNICIAN_ASSIGNED"
+  | "WORKER_CONFIRMED"
   | "LOCATION_SHARED"
   | "ON_THE_WAY"
   | "ARRIVED"
@@ -59,6 +60,11 @@ const eventPresets: Record<
   TECHNICIAN_ASSIGNED: {
     title: "Technician assigned",
     description: "A technician has been assigned to your booking.",
+    status: "CONFIRMED",
+  },
+  WORKER_CONFIRMED: {
+    title: "Worker accepted appointment",
+    description: "The assigned worker has reviewed and accepted the booking.",
     status: "CONFIRMED",
   },
   LOCATION_SHARED: {

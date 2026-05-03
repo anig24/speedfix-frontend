@@ -124,6 +124,25 @@ function isAvailable(candidate: Record<string, unknown>) {
   return true;
 }
 
+function isVerifiedFieldWorker(
+  source: WorkerSource,
+  candidate: Record<string, unknown>
+) {
+  if (source === "employees") {
+    return true;
+  }
+
+  const kyc = candidate.kyc as Record<string, unknown> | undefined;
+  const verificationStatus = normalizeUpper(candidate.verificationStatus);
+  const kycStatus = normalizeUpper(kyc?.status);
+
+  return (
+    candidate.verified === true ||
+    verificationStatus === "VERIFIED" ||
+    kycStatus === "VERIFIED"
+  );
+}
+
 function mapWorkerCandidate(
   source: WorkerSource,
   raw: Record<string, unknown> & { id: string }
@@ -220,7 +239,11 @@ async function findAssignableWorker(
     ...workers.map((item) => ({ source: "workers" as const, raw: item })),
     ...employees.map((item) => ({ source: "employees" as const, raw: item })),
   ]
-    .filter((candidate) => isAvailable(candidate.raw))
+    .filter(
+      (candidate) =>
+        isAvailable(candidate.raw) &&
+        isVerifiedFieldWorker(candidate.source, candidate.raw)
+    )
     .map((candidate) => ({
       ...candidate,
       worker: mapWorkerCandidate(candidate.source, candidate.raw),

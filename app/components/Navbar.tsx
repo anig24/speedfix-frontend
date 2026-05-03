@@ -67,6 +67,7 @@ type UserProfile = {
 
 const primaryLinks = [
   { href: "/services", label: "Services" },
+  { href: "/workers", label: "Workers" },
   { href: "/careers", label: "Careers" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -285,32 +286,32 @@ export default function Navbar() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          className="mx-auto flex h-[76px] max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8"
+          className="mx-auto grid h-[76px] max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-5 px-4 sm:px-6 lg:gap-8 lg:px-8"
         >
-          <Link href="/" className="flex items-center gap-2 text-white">
+          <Link href="/" className="flex min-w-max items-center gap-2 text-white">
             <span className="text-2xl font-semibold tracking-tight text-glow">
               <span className="text-white">Speed</span>
               <span className="text-[#FF6A00]">Fix</span>
             </span>
           </Link>
 
-          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 lg:flex">
+          <nav className="hidden min-w-0 items-center justify-center gap-2 xl:flex">
             {primaryLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-full px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/8 hover:text-white"
+                className="rounded-full px-3.5 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/8 hover:text-white 2xl:px-4"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center justify-end gap-2 sm:gap-3">
+          <div className="flex min-w-max items-center justify-end gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => setShowLocation(true)}
-              className="hidden items-center gap-2 rounded-full border border-white/20 bg-[#122238] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45] sm:inline-flex"
+              className="hidden items-center gap-2 rounded-full border border-white/20 bg-[#122238] px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45] sm:inline-flex lg:px-5"
             >
               <MapPin className="h-4 w-4 text-orange-400" />
               {city || "Choose city"}
@@ -324,7 +325,7 @@ export default function Navbar() {
 
             <Link
               href="/cart"
-              className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-[#122238] text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45]"
+              className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/20 bg-[#122238] text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45]"
               aria-label="View cart"
             >
               <ShoppingBag className="h-4 w-4 text-white" />
@@ -343,7 +344,7 @@ export default function Navbar() {
                     setNotifOpen((open) => !open);
                     setMenuOpen(false);
                   }}
-                  className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-[#122238] text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45]"
+                  className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/20 bg-[#122238] text-white shadow-[0_10px_24px_rgba(2,10,24,0.22)] transition hover:border-white/30 hover:bg-[#162a45]"
                   aria-label="Notifications"
                 >
                   <Bell className="h-4 w-4 text-white" />
@@ -398,7 +399,7 @@ export default function Navbar() {
                     setMenuOpen((open) => !open);
                     setNotifOpen(false);
                   }}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white shadow-[0_10px_28px_rgba(255,106,0,0.4)]"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white shadow-[0_10px_28px_rgba(255,106,0,0.4)]"
                   aria-label="Open user menu"
                 >
                   {userInitial}
@@ -474,7 +475,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/auth/login"
-                  className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-[0_12px_24px_rgba(255,255,255,0.08)] transition hover:bg-slate-100"
+                    className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-[0_12px_24px_rgba(255,255,255,0.08)] transition hover:bg-slate-100"
                 >
                   Get started
                 </Link>
@@ -488,7 +489,7 @@ export default function Navbar() {
                 setMenuOpen(false);
                 setNotifOpen(false);
               }}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/84 transition hover:border-white/20 hover:bg-white/[0.08] md:hidden"
+              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/84 transition hover:border-white/20 hover:bg-white/[0.08] xl:hidden"
               aria-label="Open mobile menu"
             >
               {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -503,7 +504,7 @@ export default function Navbar() {
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-white/10 bg-[#081423] px-6 py-6 text-white shadow-[0_24px_80px_rgba(2,10,24,0.48)] md:hidden"
+            className="fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-white/10 bg-[#081423] px-6 py-6 text-white shadow-[0_24px_80px_rgba(2,10,24,0.48)] xl:hidden"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

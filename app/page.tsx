@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -125,6 +126,13 @@ export default function HomePage() {
                 >
                   Open cart
                   <ShoppingBag className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/workers"
+                  className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-[#fff2df] px-6 py-3 text-sm font-semibold text-orange-800 transition hover:border-orange-300 hover:bg-white"
+                >
+                  Join as worker
+                  <Wrench className="h-4 w-4" />
                 </Link>
               </div>
 
@@ -270,6 +278,76 @@ export default function HomePage() {
               </motion.article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200/80 bg-[#07111f] text-white">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8">
+          <motion.div {...reveal}>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-300">
+              Worker opportunity
+            </p>
+            <h2 className="mt-3 display-font text-4xl leading-tight md:text-5xl">
+              Build regular work with verified SpeedFix appointments
+            </h2>
+            <p className="mt-5 max-w-2xl text-sm leading-8 text-slate-300">
+              Skilled electricians, plumbers, cleaners, AC technicians, and
+              home-service professionals can create a verified worker profile,
+              add salary payout bank details, share live location, and receive
+              customer appointments after booking.
+            </p>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              {[
+                "DigiLocker Aadhaar and PAN verification",
+                "Salary payout bank and IFSC setup",
+                "Booking ID, customer contact, and live status flow",
+              ].map((item) => (
+                <div key={item} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                  <p className="mt-3 text-sm leading-6 text-slate-200">{item}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/workers"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+              >
+                Start worker verification
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200">
+                <ShieldCheck className="h-4 w-4 text-orange-300" />
+                For verified field professionals
+              </span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            {...reveal}
+            className="relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]"
+          >
+            <Image
+              src="/hero.png"
+              alt="SpeedFix home service professional"
+              width={760}
+              height={520}
+              className="h-[360px] w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+            <div className="relative m-6 -mt-32 rounded-lg border border-white/10 bg-slate-950/80 p-5 backdrop-blur-md">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Worker route
+              </p>
+              <p className="mt-2 text-2xl font-semibold">speedfix.co.in/workers</p>
+              <p className="mt-3 text-sm leading-7 text-slate-300">
+                A step-by-step place to join, verify, add payout details, and
+                check assigned appointments.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </section>
 

@@ -18,6 +18,7 @@ import { getDefaultWorkspaceHref } from "@/lib/portalAccess";
 
 export default function AuthPage() {
   const router = useRouter();
+  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   const [isLogin, setIsLogin] = useState(true);
   const [captchaValue, setCaptchaValue] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -66,7 +67,7 @@ export default function AuthPage() {
     event.preventDefault();
     setError("");
 
-    if (!captchaValue) {
+    if (recaptchaSiteKey && !captchaValue) {
       setError("Please verify reCAPTCHA");
       return;
     }
@@ -94,7 +95,7 @@ export default function AuthPage() {
     event.preventDefault();
     setError("");
 
-    if (!captchaValue) {
+    if (recaptchaSiteKey && !captchaValue) {
       setError("Please verify reCAPTCHA");
       return;
     }
@@ -215,11 +216,13 @@ export default function AuthPage() {
                   </button>
                 </div>
 
-                <ReCAPTCHA
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                  onChange={(value: string | null) => setCaptchaValue(value)}
-                  className="mt-4"
-                />
+                {recaptchaSiteKey && (
+                  <ReCAPTCHA
+                    sitekey={recaptchaSiteKey}
+                    onChange={(value: string | null) => setCaptchaValue(value)}
+                    className="mt-4"
+                  />
+                )}
 
                 {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
 
@@ -291,11 +294,13 @@ export default function AuthPage() {
                   </button>
                 </div>
 
-                <ReCAPTCHA
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                  onChange={(value: string | null) => setCaptchaValue(value)}
-                  className="mt-4"
-                />
+                {recaptchaSiteKey && (
+                  <ReCAPTCHA
+                    sitekey={recaptchaSiteKey}
+                    onChange={(value: string | null) => setCaptchaValue(value)}
+                    className="mt-4"
+                  />
+                )}
 
                 {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
 
@@ -325,7 +330,11 @@ export default function AuthPage() {
 
             <button
               type="button"
-              onClick={() => setIsLogin((current) => !current)}
+              onClick={() => {
+                setCaptchaValue(null);
+                setError("");
+                setIsLogin((current) => !current);
+              }}
               className="border px-6 py-2 rounded hover:bg-white hover:text-black transition"
             >
               {isLogin ? "Create Account" : "Login"}
