@@ -92,9 +92,9 @@ export default function HomePage() {
         <div className="public-hero-glow absolute inset-x-0 top-0 h-[26rem]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
-          <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-            <motion.div {...reveal} className="space-y-7">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-4 py-2 text-sm text-slate-700">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
+            <motion.div {...reveal} className="min-w-0 space-y-7">
+              <div className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-4 py-2 text-sm text-slate-700">
                 <ShieldCheck className="h-4 w-4 text-orange-500" />
                 Verified field teams and structured booking
               </div>
@@ -103,7 +103,7 @@ export default function HomePage() {
                 <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500">
                   SpeedFix
                 </p>
-                <h1 className="display-font max-w-4xl text-5xl leading-tight text-slate-950 md:text-6xl">
+                <h1 className="display-font max-w-4xl text-4xl leading-tight text-slate-950 sm:text-5xl md:text-6xl">
                   Home Services
                 </h1>
                 <p className="max-w-2xl text-lg leading-8 text-slate-600">
@@ -155,7 +155,7 @@ export default function HomePage() {
 
             <motion.div
               {...reveal}
-              className="surface-panel rounded-[2.25rem] border border-slate-200 p-6"
+              className="surface-panel min-w-0 rounded-[2.25rem] border border-slate-200 p-6"
             >
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

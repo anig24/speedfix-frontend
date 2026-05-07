@@ -56,7 +56,7 @@ export default function LocationGate({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-20 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-6 backdrop-blur-sm sm:pt-20"
       onClick={onClose}
     >
       <div
@@ -82,18 +82,18 @@ export default function LocationGate({ onClose }: { onClose: () => void }) {
             {loading ? "Detecting..." : "Use Current Location"}
           </button>
 
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-col gap-2 min-[380px]:flex-row">
             <input
               type="text"
               placeholder="Enter pincode"
               value={pincode}
               onChange={(event) => setPincode(event.target.value)}
-              className="flex-1 rounded-full border border-white/10 bg-white/95 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-300"
+              className="min-w-0 flex-1 rounded-full border border-white/10 bg-white/95 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-300"
             />
 
             <button
               onClick={handlePincode}
-              className="rounded-full bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+              className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
             >
               Go
             </button>

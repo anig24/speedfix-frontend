@@ -286,7 +286,7 @@ export default function Navbar() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          className="mx-auto grid h-[76px] max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-5 px-4 sm:px-6 lg:gap-8 lg:px-8"
+          className="mx-auto grid h-[76px] max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 sm:px-6 lg:gap-8 lg:px-8"
         >
           <Link href="/" className="flex min-w-max items-center gap-2 text-white">
             <span className="text-2xl font-semibold tracking-tight text-glow">
@@ -307,7 +307,7 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <div className="flex min-w-max items-center justify-end gap-3 sm:gap-4">
+          <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-4">
             <button
               type="button"
               onClick={() => setShowLocation(true)}
@@ -337,7 +337,7 @@ export default function Navbar() {
             </Link>
 
             {user && (
-              <div className="relative">
+              <div className="relative hidden sm:block">
                 <button
                   type="button"
                   onClick={() => {
@@ -504,7 +504,7 @@ export default function Navbar() {
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-white/10 bg-[#081423] px-6 py-6 text-white shadow-[0_24px_80px_rgba(2,10,24,0.48)] xl:hidden"
+            className="mobile-safe-scroll fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-white/10 bg-[#081423] px-6 text-white shadow-[0_24px_80px_rgba(2,10,24,0.48)] xl:hidden"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

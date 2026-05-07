@@ -3,8 +3,24 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { serverDb } from "@/lib/firebase-server";
 import { getServiceBySlug, resolveServiceSlug } from "@/lib/serviceCatalog";
 
+const corsHeaders = {
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Origin": "*",
+};
+
 const phonePattern = /^[6-9]\d{9}$/;
 const pincodePattern = /^\d{6}$/;
+
+function json(data: unknown, init?: ResponseInit) {
+  return NextResponse.json(data, {
+    ...init,
+    headers: {
+      ...corsHeaders,
+      ...(init?.headers || {}),
+    },
+  });
+}
 
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -82,42 +98,39 @@ export async function POST(request: Request) {
     const service = getServiceBySlug(serviceSlug);
 
     if (!service) {
-      return NextResponse.json(
+      return json(
         { error: "Please choose a valid service." },
         { status: 400 }
       );
     }
 
     if (!name || name.length < 2) {
-      return NextResponse.json(
+      return json(
         { error: "Please enter your full name." },
         { status: 400 }
       );
     }
 
     if (!phonePattern.test(phone)) {
-      return NextResponse.json(
+      return json(
         { error: "Please enter a valid 10 digit mobile number." },
         { status: 400 }
       );
     }
 
     if (!city || city.length < 2) {
-      return NextResponse.json(
-        { error: "Please enter your city." },
-        { status: 400 }
-      );
+      return json({ error: "Please enter your city." }, { status: 400 });
     }
 
     if (!pincodePattern.test(pincode)) {
-      return NextResponse.json(
+      return json(
         { error: "Please enter a valid 6 digit pincode." },
         { status: 400 }
       );
     }
 
     if (!address || address.length < 12) {
-      return NextResponse.json(
+      return json(
         { error: "Please add a complete service address." },
         { status: 400 }
       );
@@ -159,7 +172,7 @@ export async function POST(request: Request) {
 
     const docRef = await addDoc(collection(serverDb, "bookings"), bookingRecord);
 
-    return NextResponse.json({
+    return json({
       success: true,
       bookingId: docRef.id,
       status: bookingRecord.status,
@@ -168,9 +181,16 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("SERVICE_REQUEST_ERROR", error);
 
-    return NextResponse.json(
+    return json(
       { error: "Unable to create your request right now." },
       { status: 500 }
     );
   }
+}
+
+export function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
 }

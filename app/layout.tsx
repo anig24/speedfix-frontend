@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   title: "SpeedFix | Home Services",
   description:
     "Professional home services for repairs, cleaning, maintenance, and installations.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 const manrope = Manrope({

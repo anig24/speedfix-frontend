@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
+const DEFAULT_TAWK_EMBED_URL =
+  "https://embed.tawk.to/69fafbb604c2b71c35758879/1jnu6eh55";
+
 declare global {
   interface Window {
     Tawk_API?: {
@@ -56,7 +59,7 @@ export default function TawkChatWidget() {
         ? `https://embed.tawk.to/${propertyId}/${widgetId}`
         : propertyId
           ? `https://embed.tawk.to/${propertyId}/default`
-          : "");
+          : DEFAULT_TAWK_EMBED_URL);
 
     if (!pathname || !embedUrl) {
       return;

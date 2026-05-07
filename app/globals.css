@@ -17,11 +17,25 @@
   --shadow-panel: 0 24px 60px rgba(15, 23, 42, 0.08);
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
   font-family: var(--font-body);
   background:
     radial-gradient(circle at top left, rgba(255, 106, 0, 0.08), transparent 22%),
@@ -29,6 +43,45 @@ body {
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+.grid > *,
+.flex > * {
+  min-width: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
+.mobile-safe-scroll {
+  max-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-top: max(1.5rem, env(safe-area-inset-top));
+}
+
+.safe-floating {
+  bottom: max(1.5rem, env(safe-area-inset-bottom));
+  right: max(1rem, env(safe-area-inset-right));
 }
 
 .display-font {

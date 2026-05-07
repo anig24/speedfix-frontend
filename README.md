@@ -2,6 +2,22 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Create `.env.local` with the app secrets. Customer chat is handled by the
+Tawk.to widget configured in `app/components/TawkChatWidget.tsx`.
+
+## Tawk.to Automation
+
+Use these values in the Tawk.to OpenAPI Server popup after the site is deployed:
+
+```text
+Schema File URL: https://your-domain.com/api/tawk/openapi
+API base URL: https://your-domain.com
+Authentication method: No Auth
+```
+
+The schema exposes public service search, service detail, operating cities,
+pincode lookup, booking guidance, and service request lead creation.
+
 First, run the development server:
 
 ```bash
