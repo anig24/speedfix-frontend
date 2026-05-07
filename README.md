@@ -10,13 +10,15 @@ Tawk.to widget configured in `app/components/TawkChatWidget.tsx`.
 Use these values in the Tawk.to OpenAPI Server popup after the site is deployed:
 
 ```text
-Schema File URL: https://your-domain.com/api/tawk/openapi
-API base URL: https://your-domain.com
+Schema File URL: https://www.speedfix.co.in/tawk-openapi.json
+API base URL: https://www.speedfix.co.in
 Authentication method: No Auth
 ```
 
 The schema exposes public service search, service detail, operating cities,
 pincode lookup, booking guidance, and service request lead creation.
+Use the `www` domain for both fields. The non-`www` domain redirects, and some
+OpenAPI importers do not follow that redirect while validating the schema.
 
 First, run the development server:
 
