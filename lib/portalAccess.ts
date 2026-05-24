@@ -246,12 +246,12 @@ export function getDefaultWorkspaceHref(
   record: unknown,
   emailOverride?: unknown
 ) {
-  if (canAccessWorkspace(record, "agent", emailOverride)) {
-    return "/agent";
-  }
-
   if (canAccessWorkspace(record, "corporate", emailOverride)) {
     return getCorporateHomeHref(record, emailOverride);
+  }
+
+  if (canAccessWorkspace(record, "agent", emailOverride)) {
+    return "/agent";
   }
 
   return "/customer";

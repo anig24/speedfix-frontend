@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     const data = await response.json();
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Fetch failed" }, { status: 500 });
   }
 }

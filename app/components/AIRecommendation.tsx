@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+function getRecommendation() {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return "Morning Cleaning Service";
+  }
+
+  if (hour < 18) {
+    return "Appliance Repair";
+  }
+
+  return "Deep Cleaning for Tomorrow";
+}
 
 export default function AIRecommendation() {
-  const [recommendation, setRecommendation] = useState("");
-
-  useEffect(() => {
-    const hour = new Date().getHours();
-
-    if (hour < 12) {
-      setRecommendation("Morning Cleaning Service");
-    } else if (hour < 18) {
-      setRecommendation("Appliance Repair");
-    } else {
-      setRecommendation("Deep Cleaning for Tomorrow");
-    }
-  }, []);
+  const recommendation = getRecommendation();
 
   return (
     <div className="bg-[#0F172A] text-white p-6 rounded-xl mt-10">

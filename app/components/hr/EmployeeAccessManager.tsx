@@ -1,667 +1,272 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import {
-  addDoc,
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-  doc,
-} from "firebase/firestore";
-import {
-  deleteApp,
-  getApps,
-  initializeApp,
-  type FirebaseApp,
-} from "firebase/app";
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  signOut,
-} from "firebase/auth";
-import { AlertCircle, CheckCircle2, ShieldCheck, UserPlus } from "lucide-react";
-import { auth, db } from "@/lib/firebase";
-import {
-  canAccessWorkspace,
-  getDefaultWorkspaceHref,
-  hasCompanyEmail,
-} from "@/lib/portalAccess";
-import { getAccessibleWorkspaceLinks } from "@/lib/workspaceCatalog";
+import { FormEvent, useEffect, useState } from "react";
+import { collection, onSnapshot, orderBy, query, serverTimestamp, setDoc, doc } from "firebase/firestore";
+import { getApps, initializeApp } from "firebase/app";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { AlertCircle, CheckCircle2, ShieldCheck, Pencil, X } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { hasCompanyEmail } from "@/lib/portalAccess";
 
 type EmployeeForm = {
-  name: string;
-  email: string;
-  temporaryPassword: string;
-  phone: string;
-  role: string;
-  department: string;
-  city: string;
-  employeeCode: string;
+  name: string; email: string; temporaryPassword: string; phone: string; role: string; 
+  departmentId: string; city: string; employeeCode: string; designation: string; 
+  companyRole: string; cluster: string; salary: number; status: string;
 };
 
 type EmployeePreview = {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  department: string;
-  city: string;
+  id: string; name: string; email: string; role: string; phone: string; employeeCode: string; 
+  designation: string; companyRole: string; cluster: string; salary: number; status: string; departmentId: string; city: string;
 };
 
 const defaultForm: EmployeeForm = {
-  name: "",
-  email: "",
-  temporaryPassword: "",
-  phone: "",
-  role: "FIELD_RECRUITER",
-  department: "Talent Acquisition",
-  city: "",
-  employeeCode: "",
+  name: "", email: "", temporaryPassword: "", phone: "", role: "FIELD_RECRUITER", 
+  departmentId: "sf-ops-01", city: "Bangalore", employeeCode: "", designation: "", 
+  companyRole: "", cluster: "Executive", salary: 0, status: "active",
 };
 
 const employeeRoleGroups = [
-  {
-    label: "Leadership",
-    roles: [
-      "FOUNDER",
-      "BUSINESS_HEAD",
-      "CHIEF_OPERATING_OFFICER",
-      "CHIEF_FINANCIAL_OFFICER",
-    ],
-  },
-  {
-    label: "HR and Hiring",
-    roles: [
-      "HEAD_HR",
-      "HR",
-      "JR_HR",
-      "HR_INTERN",
-      "HEAD_RECRUITER",
-      "RECRUITER",
-      "FIELD_RECRUITER",
-      "TALENT_ACQUISITION",
-      "CAMPUS_RECRUITER",
-    ],
-  },
-  {
-    label: "Operations",
-    roles: [
-      "STATE_MANAGER",
-      "CITY_MANAGER",
-      "ZONE_MANAGER",
-      "CLUSTER_MANAGER",
-      "OPERATIONS_MANAGER",
-      "OPERATIONS",
-      "OPERATIONS_ADMIN",
-      "SERVICE_HEAD",
-      "DISPATCHER",
-      "SCHEDULING_COORDINATOR",
-      "FIELD_SUPERVISOR",
-    ],
-  },
-  {
-    label: "Finance and Accounts",
-    roles: [
-      "FINANCE_HEAD",
-      "ACCOUNTS_HEAD",
-      "ACCOUNTS",
-      "ACCOUNTANT",
-      "FINANCE",
-      "BILLING",
-      "REFUND_OPS",
-      "PAYOUTS",
-      "COLLECTIONS",
-    ],
-  },
-  {
-    label: "Quality and Compliance",
-    roles: [
-      "QUALITY_HEAD",
-      "QUALITY",
-      "AUDIT",
-      "AUDITOR",
-      "QA",
-      "COMPLIANCE",
-      "TRAINING_MANAGER",
-    ],
-  },
-  {
-    label: "Catalog and Platform Control",
-    roles: [
-      "SUPER_ADMIN",
-      "ADMIN",
-      "CATEGORY_MANAGER",
-      "CATALOG",
-      "PRICING_MANAGER",
-      "GROWTH_MANAGER",
-    ],
-  },
-  {
-    label: "Support and Field Service",
-    roles: [
-      "SUPPORT_LEAD",
-      "TEAM_LEAD",
-      "SENIOR_AGENT",
-      "AGENT",
-      "CALL_AGENT",
-      "CUSTOMER_SUCCESS",
-      "TECHNICIAN",
-      "FIELD_EXECUTIVE",
-      "STAFF",
-    ],
-  },
+  { label: "Leadership", roles: ["FOUNDER", "CHIEF_TECHNOLOGY_OFFICER", "DEPUTY_CHIEF_TECHNOLOGY_OFFICER", "CHIEF_OPERATING_OFFICER", "CHIEF_FINANCIAL_OFFICER"] },
+  { label: "HR and Hiring", roles: ["HEAD_HR", "HR", "RECRUITER", "TALENT_ACQUISITION"] },
+  { label: "Operations", roles: ["STATE_MANAGER", "CITY_MANAGER", "OPERATIONS_MANAGER", "DISPATCHER", "FIELD_SUPERVISOR"] },
+  { label: "Finance", roles: ["FINANCE_HEAD", "ACCOUNTS", "ACCOUNTANT", "PAYOUTS"] },
 ];
-
-function getSuggestedDepartment(role: string) {
-  if (
-    [
-      "HEAD_HR",
-      "HR",
-      "JR_HR",
-      "HR_INTERN",
-      "HEAD_RECRUITER",
-      "RECRUITER",
-      "FIELD_RECRUITER",
-      "TALENT_ACQUISITION",
-      "CAMPUS_RECRUITER",
-    ].includes(role)
-  ) {
-    return "Talent Acquisition";
-  }
-
-  if (
-    [
-      "STATE_MANAGER",
-      "CITY_MANAGER",
-      "ZONE_MANAGER",
-      "CLUSTER_MANAGER",
-      "OPERATIONS_MANAGER",
-      "OPERATIONS",
-      "OPERATIONS_ADMIN",
-      "SERVICE_HEAD",
-      "DISPATCHER",
-      "SCHEDULING_COORDINATOR",
-      "FIELD_SUPERVISOR",
-    ].includes(role)
-  ) {
-    return "Operations";
-  }
-
-  if (
-    [
-      "FINANCE_HEAD",
-      "ACCOUNTS_HEAD",
-      "ACCOUNTS",
-      "ACCOUNTANT",
-      "FINANCE",
-      "BILLING",
-      "REFUND_OPS",
-      "PAYOUTS",
-      "COLLECTIONS",
-    ].includes(role)
-  ) {
-    return "Finance";
-  }
-
-  if (
-    ["QUALITY_HEAD", "QUALITY", "AUDIT", "AUDITOR", "QA", "COMPLIANCE"].includes(
-      role
-    )
-  ) {
-    return "Quality and Compliance";
-  }
-
-  if (
-    ["SUPER_ADMIN", "ADMIN", "CATEGORY_MANAGER", "CATALOG", "PRICING_MANAGER"].includes(
-      role
-    )
-  ) {
-    return "Platform Control";
-  }
-
-  if (
-    ["SUPPORT_LEAD", "TEAM_LEAD", "SENIOR_AGENT", "AGENT", "CALL_AGENT", "CUSTOMER_SUCCESS"].includes(
-      role
-    )
-  ) {
-    return "Customer Support";
-  }
-
-  if (["TECHNICIAN", "FIELD_EXECUTIVE", "STAFF"].includes(role)) {
-    return "Field Service";
-  }
-
-  return "Leadership";
-}
-
-function getSecondaryProvisionerApp() {
-  const existing = getApps().find((app) =>
-    app.name.startsWith("speedfix-employee-provisioner")
-  );
-
-  if (existing) {
-    return existing;
-  }
-
-  return initializeApp(
-    {
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-    },
-    `speedfix-employee-provisioner-${Date.now()}`
-  );
-}
 
 export default function EmployeeAccessManager() {
   const [form, setForm] = useState<EmployeeForm>(defaultForm);
   const [employees, setEmployees] = useState<EmployeePreview[]>([]);
-  const [status, setStatus] = useState<{
-    type: "idle" | "saving" | "success" | "error";
-    message: string;
-  }>({ type: "idle", message: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ type: "idle" | "saving" | "success" | "error"; message: string; }>({ type: "idle", message: "" });
 
+  // Safe data fetching loop
   useEffect(() => {
-    const employeeQuery = query(collection(db, "users"), orderBy("createdAt", "desc"));
-
-    return onSnapshot(employeeQuery, (snapshot) => {
-      const nextEmployees = snapshot.docs
-        .map((item) => {
-          const data = item.data() as Omit<EmployeePreview, "id"> & {
-            email?: string;
-            role?: string;
-            department?: string;
-            city?: string;
-          };
-
-          return {
-            id: item.id,
-            ...data,
-          };
-        })
-        .filter((item) => hasCompanyEmail(item.email))
-        .slice(0, 10)
-        .map((item) => ({
-          id: item.id,
-          name: typeof item.name === "string" ? item.name : "Unnamed employee",
-          email: typeof item.email === "string" ? item.email : "",
-          role: typeof item.role === "string" ? item.role : "EMPLOYEE",
-          department:
-            typeof item.department === "string" ? item.department : "Not set",
-          city: typeof item.city === "string" ? item.city : "Not set",
-        }));
-
+    const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const nextEmployees = snapshot.docs.map(item => ({ id: item.id, ...item.data() } as any))
+        .filter(i => hasCompanyEmail(i.email)).slice(0, 3);
       setEmployees(nextEmployees);
     });
-  }, []);
+    return () => unsubscribe();
+  }, []); 
 
-  const workspacePreview = useMemo(() => {
-    const draftRecord = {
-      role: form.role,
-      email: form.email,
-      active: true,
-      employeeActive: true,
-      employmentStatus: "ACTIVE",
-    };
+  // Load existing employee data into the form for editing
+  const handleEditSetup = (employee: EmployeePreview) => {
+    setEditingId(employee.id);
+    setForm({
+      name: employee.name || "",
+      email: employee.email || "",
+      temporaryPassword: "", 
+      phone: employee.phone || "",
+      role: employee.role || "EMPLOYEE",
+      departmentId: employee.departmentId || "sf-ops-01",
+      city: employee.city || "Bangalore",
+      employeeCode: employee.employeeCode || "",
+      designation: employee.designation || "",
+      companyRole: employee.companyRole || "",
+      cluster: employee.cluster || "Executive",
+      salary: employee.salary || 0,
+      status: employee.status || "active",
+    });
+    setStatus({ type: "idle", message: "" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-    return getAccessibleWorkspaceLinks(draftRecord, form.email).map(
-      (item) => item.shortLabel
-    );
-  }, [form.email, form.role]);
-
-  const dashboardPathPreview = useMemo(() => {
-    const draftRecord = {
-      role: form.role,
-      email: form.email,
-      active: true,
-      employeeActive: true,
-      employmentStatus: "ACTIVE",
-    };
-
-    return getDefaultWorkspaceHref(draftRecord, form.email);
-  }, [form.email, form.role]);
-
-  const handleCreateEmployee = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setStatus({ type: "saving", message: "Creating employee access..." });
-
-    if (!form.name || !form.email || !form.temporaryPassword || !form.role) {
-      setStatus({
-        type: "error",
-        message: "Please complete all required employee access fields.",
-      });
-      return;
-    }
-
-    if (!hasCompanyEmail(form.email)) {
-      setStatus({
-        type: "error",
-        message: "Employee access can only be created for @speedfix.co.in emails.",
-      });
-      return;
-    }
-
-    if (!auth.currentUser?.uid || !auth.currentUser?.email) {
-      setStatus({
-        type: "error",
-        message: "You must be signed in as HR to create employee access.",
-      });
-      return;
-    }
-
-    const hrRecord = {
-      role: "HR",
-      email: auth.currentUser.email,
-      active: true,
-      employeeActive: true,
-      employmentStatus: "ACTIVE",
-    };
-
-    if (!canAccessWorkspace(hrRecord, "hr", auth.currentUser.email)) {
-      setStatus({
-        type: "error",
-        message: "Only HR or recruiter accounts can create employee access.",
-      });
-      return;
-    }
-
-    let provisionerApp: FirebaseApp | null = null;
+  const handleFormSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setStatus({ type: "saving", message: "Syncing identity to directory..." });
 
     try {
-      provisionerApp = getSecondaryProvisionerApp();
-      const provisionerAuth = getAuth(provisionerApp);
-      const employeeCredential = await createUserWithEmailAndPassword(
-        provisionerAuth,
-        form.email,
-        form.temporaryPassword
-      );
-
-      const employeeUid = employeeCredential.user.uid;
-      const accessibleWorkspaces = getAccessibleWorkspaceLinks(
-        {
-          role: form.role,
-          email: form.email,
-          active: true,
-          employeeActive: true,
-          employmentStatus: "ACTIVE",
-        },
-        form.email
-      ).map((item) => item.key);
-
-      await setDoc(doc(db, "users", employeeUid), {
-        name: form.name,
-        email: form.email,
-        phone: form.phone || "",
-        role: form.role,
-        department: form.department || "",
-        city: form.city || "",
-        employeeCode: form.employeeCode || "",
-        active: true,
-        employeeActive: true,
-        employmentStatus: "ACTIVE",
-        portalType: "COMPANY",
-        workspaceAccess: accessibleWorkspaces,
-        createdByUid: auth.currentUser.uid,
-        createdByEmail: auth.currentUser.email,
-        createdAt: serverTimestamp(),
-      });
-
-      await addDoc(collection(db, "employeeAccessLog"), {
-        action: "EMPLOYEE_ACCESS_CREATED",
-        employeeUid,
-        employeeEmail: form.email,
-        employeeRole: form.role,
-        workspaceAccess: accessibleWorkspaces,
-        createdByUid: auth.currentUser.uid,
-        createdByEmail: auth.currentUser.email,
-        createdAt: serverTimestamp(),
-      });
-
-      await signOut(provisionerAuth);
-
-      setStatus({
-        type: "success",
-        message:
-          "Employee access created successfully. Share the work email and temporary password with the employee, then ask them to change it after first login.",
-      });
-      setForm(defaultForm);
-    } catch (error) {
-      setStatus({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to create employee access right now.",
-      });
-    } finally {
-      if (provisionerApp) {
-        await deleteApp(provisionerApp).catch(() => undefined);
+      let uid = editingId;
+      
+      // 1. If it is a NEW employee, create the Firebase Auth account first
+      if (!uid) {
+        const authApp = getSecondaryProvisionerApp();
+        const authInstance = getAuth(authApp);
+        const userCredential = await createUserWithEmailAndPassword(authInstance, form.email, form.temporaryPassword);
+        uid = userCredential.user.uid;
       }
+      
+      // 2. Inject MNC Permissions Automatically
+      const permissions = {
+        employees: { view: true, update: true, manage: true, delete: true },
+        finance: { view: true, update: true, manage: true },
+        jobs: { read: true, update: true, assign: true },
+        system: { fullAccess: form.role === "FOUNDER", write: true, settings: true, manageApplications: true, manageDepartments: true, manageJobs: true, managePayroll: true, systemSettings: true, viewReports: true }
+      };
+
+      // 3. Build the Master Payload
+      const userRef = doc(db, "users", uid!);
+      const isUserActive = form.status === "active";
+      
+      const payload: any = {
+        // MNC Custom Fields
+        fullName: form.name,
+        name: form.name, 
+        email: form.email,
+        phone: form.phone,
+        role: form.role,
+        designation: form.designation,
+        companyRole: form.companyRole,
+        departmentId: form.departmentId,
+        salary: form.salary,
+        status: form.status,
+        cluster: form.cluster,
+        employeeId: form.employeeCode,
+        companyId: "SPEEDFIX_MAIN",
+        accountType: "internal",
+        permissions: permissions,
+        updatedAt: serverTimestamp(),
+        isSuperAdmin: form.role === "FOUNDER",
+
+        // CRITICAL IAM SECURITY FLAGS (Required for routing)
+        active: isUserActive,
+        isActive: isUserActive,
+        employeeActive: isUserActive,
+        employmentActive: isUserActive,
+        employmentStatus: isUserActive ? "ACTIVE" : "INACTIVE",
+        portalType: "COMPANY", 
+      };
+
+      if (!editingId) {
+         payload.createdAt = serverTimestamp();
+      }
+
+      // 4. Save to Database
+      await setDoc(userRef, payload, { merge: true });
+
+      setStatus({ type: "success", message: `Identity ${editingId ? "updated" : "provisioned"} successfully.` });
+      setEditingId(null);
+      setForm(defaultForm);
+    } catch (err: any) {
+      setStatus({ type: "error", message: err.message });
     }
   };
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card">
-        <div className="inline-flex rounded-2xl bg-[#fff2df] p-3 text-orange-500">
-          <UserPlus className="h-5 w-5" />
-        </div>
-        <h2 className="mt-5 text-2xl font-semibold text-slate-950">
-          Add employee access
+    <div className="grid gap-6 xl:grid-cols-[1fr_350px] font-sans text-slate-900 items-start">
+      {/* LEFT: Core Provisioning Form */}
+      <section className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm max-w-4xl">
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <ShieldCheck className="text-[#FF6A00] h-6 w-6"/> 
+          {editingId ? "Edit Identity Profile" : "Corporate IAM Access"}
         </h2>
-        <p className="mt-3 text-sm leading-7 text-slate-600">
-          HR can create employee login access directly in the existing SpeedFix
-          Firebase project. This writes the employee role and workspace access
-          into the same `users` collection used by the app.
-        </p>
-
-        <form className="mt-6 space-y-4" onSubmit={handleCreateEmployee}>
-          <div className="grid gap-4 md:grid-cols-2">
-            <input
-              value={form.name}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, name: event.target.value }))
-              }
-              placeholder="Employee name"
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-            />
-            <input
-              value={form.email}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, email: event.target.value }))
-              }
-              placeholder="employee@speedfix.co.in"
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-            />
-            <input
-              value={form.temporaryPassword}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  temporaryPassword: event.target.value,
-                }))
-              }
-              placeholder="Temporary password"
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-            />
-            <input
-              value={form.phone}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, phone: event.target.value }))
-              }
-              placeholder="Phone number"
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-            />
-            <select
-              value={form.role}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  role: event.target.value,
-                  department:
-                    current.department === getSuggestedDepartment(current.role) ||
-                    !current.department
-                      ? getSuggestedDepartment(event.target.value)
-                      : current.department,
-                }))
-              }
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-            >
-              {employeeRoleGroups.map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.roles.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <input
-              value={form.department}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  department: event.target.value,
-                }))
-              }
-              placeholder="Department"
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-            />
-            <input
-              value={form.city}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, city: event.target.value }))
-              }
-              placeholder="City"
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-            />
-            <input
-              value={form.employeeCode}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  employeeCode: event.target.value,
-                }))
-              }
-              placeholder="Employee code"
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+        
+        <form onSubmit={handleFormSubmit} className="grid md:grid-cols-2 gap-4">
+          <Input label="Full Name" value={form.name} onChange={(v: string) => setForm(c => ({...c, name: v}))} />
+          
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Corporate Email</label>
+            <input 
+              type="email" 
+              required
+              disabled={!!editingId} // Locks email during edits
+              value={form.email} 
+              onChange={(e) => setForm(c => ({...c, email: e.target.value}))} 
+              className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-medium focus:ring-1 focus:ring-[#FF6A00] outline-none disabled:opacity-60 disabled:cursor-not-allowed" 
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={status.type === "saving"}
-            className="w-full rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {status.type === "saving" ? "Creating access..." : "Create employee access"}
-          </button>
+          {!editingId && (
+            <Input label="Initial Password" type="text" value={form.temporaryPassword} onChange={(v: string) => setForm(c => ({...c, temporaryPassword: v}))} />
+          )}
+          
+          <Input label="Designation" value={form.designation} onChange={(v: string) => setForm(c => ({...c, designation: v}))} />
+          <Input label="Company Role" value={form.companyRole} onChange={(v: string) => setForm(c => ({...c, companyRole: v}))} />
+          <Input label="Salary" type="number" value={form.salary} onChange={(v: string) => setForm(c => ({...c, salary: Number(v)}))} />
+          <Input label="Cluster" value={form.cluster} onChange={(v: string) => setForm(c => ({...c, cluster: v}))} />
+          
+          <div className="md:col-span-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">IAM Role Assignment</label>
+            <select 
+              className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-medium focus:ring-1 focus:ring-[#FF6A00] outline-none mt-1" 
+              value={form.role} 
+              onChange={e => setForm(c => ({...c, role: e.target.value}))}
+            >
+              {employeeRoleGroups.map(g => (
+                <optgroup key={g.label} label={g.label}>
+                  {g.roles.map(r => <option key={r} value={r}>{r}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+          
+          <div className="md:col-span-2 mt-4 flex gap-3">
+             <button type="submit" disabled={status.type === "saving"} className="flex-1 h-12 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition disabled:opacity-70">
+               {status.type === "saving" ? "Provisioning..." : editingId ? "Save Identity Updates" : "Provision Master Identity"}
+             </button>
+             
+             {editingId && (
+               <button type="button" onClick={() => { setEditingId(null); setForm(defaultForm); }} className="px-6 h-12 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition">
+                 Cancel
+               </button>
+             )}
+          </div>
         </form>
 
         {status.type !== "idle" && (
-          <div
-            className={`mt-4 flex items-start gap-2 rounded-[1.5rem] px-4 py-3 text-sm ${
-              status.type === "success"
-                ? "bg-emerald-50 text-emerald-700"
-                : status.type === "error"
-                  ? "bg-rose-50 text-rose-700"
-                  : "bg-slate-100 text-slate-700"
-            }`}
-          >
-            {status.type === "success" ? (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-            ) : (
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            )}
+          <div className={`mt-6 flex items-start gap-3 rounded-xl px-4 py-3 text-sm font-medium border ${status.type === "success" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"}`}>
+            {status.type === "success" ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />}
             {status.message}
           </div>
         )}
       </section>
 
-      <section className="space-y-6">
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card">
-          <div className="inline-flex rounded-2xl bg-slate-100 p-3 text-slate-700">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
-          <h2 className="mt-5 text-2xl font-semibold text-slate-950">
-            Access preview
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
-            Workspace access is calculated from the employee role and company
-            email before the account is created.
-          </p>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            {workspacePreview.length ? (
-              workspacePreview.map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full bg-[#fff2df] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-orange-700"
-                >
-                  {item}
-                </span>
-              ))
-            ) : (
-              <span className="rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                No company dashboard access
-              </span>
-            )}
-          </div>
-
-          <div className="mt-5 rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Landing path
-            </p>
-            <p className="mt-2 text-sm font-medium text-slate-900">
-              {dashboardPathPreview}
-            </p>
-          </div>
-        </article>
-
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card">
-          <h2 className="text-2xl font-semibold text-slate-950">
-            Recent employee access
-          </h2>
-          <div className="mt-5 space-y-3">
-            {employees.map((employee) => (
-              <div
-                key={employee.id}
-                className="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4"
-              >
-                <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <p className="font-semibold text-slate-950">{employee.name}</p>
-                    <p className="text-sm text-slate-600">{employee.email}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
-                      {employee.role}
-                    </span>
-                    <span className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      {employee.department}
-                    </span>
-                    <span className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      {employee.city}
-                    </span>
-                  </div>
+      {/* RIGHT: Recent Employees View */}
+      <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+         <h3 className="text-lg font-bold text-slate-900 mb-4">Recent Provisions</h3>
+         <div className="space-y-3">
+           {employees.map(e => (
+             <div key={e.id} className="p-4 border border-slate-200 bg-slate-50 rounded-xl flex justify-between items-start group">
+                <div>
+                  <p className="font-bold text-sm text-slate-900">{e.name}</p>
+                  <p className="text-xs text-slate-500 mb-2">{e.email}</p>
+                  <span className="rounded bg-white border border-slate-200 px-2 py-1 text-[10px] font-bold uppercase text-slate-600">
+                    {e.role.replace(/_/g, " ")}
+                  </span>
                 </div>
-              </div>
-            ))}
-
-            {!employees.length && (
-              <div className="rounded-[1.5rem] border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-                No company employee records found yet.
-              </div>
-            )}
-          </div>
-        </article>
+                {/* Arrow function safely prevents render loops */}
+                <button 
+                  onClick={() => handleEditSetup(e)} 
+                  title="Edit Identity"
+                  className="p-2 text-slate-400 hover:text-[#FF6A00] bg-white rounded shadow-sm border border-slate-200 opacity-0 group-hover:opacity-100 transition"
+                >
+                  <Pencil className="h-3.5 w-3.5"/>
+                </button>
+             </div>
+           ))}
+           {!employees.length && <p className="text-sm text-slate-500 italic">No recent employees found.</p>}
+         </div>
       </section>
     </div>
   );
+}
+
+// Clean Form Input Helper
+function Input({ label, value, onChange, type = "text" }: any) {
+  return (
+    <div className="space-y-1">
+      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</label>
+      <input 
+        type={type} 
+        required
+        value={value} 
+        onChange={(e) => onChange(e.target.value)} 
+        className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-medium focus:ring-1 focus:ring-[#FF6A00] outline-none" 
+      />
+    </div>
+  );
+}
+
+// Prevents breaking the logged-in session when creating a new employee auth record
+function getSecondaryProvisionerApp() {
+  const existing = getApps().find((app) => app.name.startsWith("speedfix-employee-provisioner"));
+  if (existing) return existing;
+  return initializeApp({
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  }, `speedfix-employee-provisioner-${Date.now()}`);
 }

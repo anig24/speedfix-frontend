@@ -3,7 +3,9 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
+import GlobalMotionSystem from "./components/GlobalMotionSystem";
 import Navbar from "./components/Navbar";
+import PageTransition from "./components/PageTransition";
 import TawkChatWidget from "./components/TawkChatWidget";
 import Providers from "./providers";
 
@@ -47,6 +49,7 @@ const serviceLinks = [
 const companyLinks = [
   { label: "About", href: "/about" },
   { label: "Workers", href: "/workers" },
+  { label: "Riders", href: "/riders" },
   { label: "Careers", href: "/careers" },
   { label: "Contact", href: "/contact" },
   { label: "Terms", href: "/terms" },
@@ -54,6 +57,7 @@ const companyLinks = [
 
 const customerLinks = [
   { label: "All services", href: "/services" },
+  { label: "Bike rides", href: "/rides" },
   { label: "Cart", href: "/cart" },
   { label: "Checkout", href: "/checkout" },
   { label: "Privacy policy", href: "/privacy-policy" },
@@ -80,12 +84,15 @@ export default function RootLayout({
         />
 
         <Providers>
+          <GlobalMotionSystem />
           <Navbar />
           <TawkChatWidget />
 
-          <main className="min-h-screen pt-[76px]">{children}</main>
+          <main className="relative z-10 min-h-screen pt-[76px]">
+            <PageTransition>{children}</PageTransition>
+          </main>
 
-          <footer className="border-t border-slate-200 bg-[#07111f] text-white">
+          <footer className="relative z-10 border-t border-slate-200 bg-[#07111f] text-white">
             <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.1fr_0.9fr_0.9fr_0.9fr] lg:px-8">
               <div className="max-w-sm">
                 <div className="flex items-center gap-3">

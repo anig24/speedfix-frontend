@@ -4,6 +4,12 @@ export type BookingTimelineKey =
   | "PAY_LATER_SELECTED"
   | "TECHNICIAN_PENDING"
   | "TECHNICIAN_ASSIGNED"
+  | "RIDE_REQUESTED"
+  | "RIDER_ASSIGNED"
+  | "RIDER_ARRIVED_PICKUP"
+  | "RIDE_OTP_VERIFIED"
+  | "RIDE_STARTED"
+  | "RIDE_DROPPED"
   | "WORKER_CONFIRMED"
   | "LOCATION_SHARED"
   | "ON_THE_WAY"
@@ -61,6 +67,36 @@ const eventPresets: Record<
     title: "Technician assigned",
     description: "A technician has been assigned to your booking.",
     status: "CONFIRMED",
+  },
+  RIDE_REQUESTED: {
+    title: "Bike rider requested",
+    description: "A bike ride has been requested for worker pickup and drop.",
+    status: "CONFIRMED",
+  },
+  RIDER_ASSIGNED: {
+    title: "Bike rider assigned",
+    description: "A bike rider has been assigned for pickup and drop.",
+    status: "CONFIRMED",
+  },
+  RIDER_ARRIVED_PICKUP: {
+    title: "Rider arrived at pickup",
+    description: "The assigned rider has reached the pickup location.",
+    status: "ON_THE_WAY",
+  },
+  RIDE_OTP_VERIFIED: {
+    title: "Ride OTP verified",
+    description: "Pickup has been verified with OTP.",
+    status: "ON_THE_WAY",
+  },
+  RIDE_STARTED: {
+    title: "Ride started",
+    description: "The worker ride is in progress toward the assigned location.",
+    status: "ON_THE_WAY",
+  },
+  RIDE_DROPPED: {
+    title: "Worker dropped",
+    description: "The worker has been dropped at the assigned service location.",
+    status: "ARRIVED",
   },
   WORKER_CONFIRMED: {
     title: "Worker accepted appointment",

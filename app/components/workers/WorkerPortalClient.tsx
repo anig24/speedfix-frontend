@@ -2,8 +2,8 @@
 
 import { ChangeEvent, useMemo, useState } from "react";
 import {
-  ArrowRight,
   BadgeCheck,
+  Bike,
   BriefcaseBusiness,
   Camera,
   CheckCircle2,
@@ -24,6 +24,11 @@ import {
   getStatusTone,
   type BookingTimelineEvent,
 } from "@/lib/bookingTracking";
+import {
+  getRideStatusTone,
+  rideStatusLabels,
+  type RideDispatchClient,
+} from "@/lib/rideService";
 import {
   indianBankOptions,
   indianStateOptions,
@@ -81,6 +86,7 @@ type WorkerDashboardBooking = {
     } | null;
     updatedAt?: string | null;
   } | null;
+  workerRide?: RideDispatchClient | null;
   timeline: BookingTimelineEvent[];
 };
 
@@ -163,6 +169,14 @@ function toSentenceCase(value: string) {
     .toLowerCase()
     .replace(/_/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatRideStatus(value?: string | null) {
+  if (!value) {
+    return "Searching rider";
+  }
+
+  return rideStatusLabels[value as keyof typeof rideStatusLabels] || toSentenceCase(value);
 }
 
 function formatDateTime(value?: string | null) {
@@ -1440,6 +1454,66 @@ export default function WorkerPortalClient() {
                     </div>
                   </div>
 
+                  {activeBooking.workerRide && (
+                    <div className="mt-5 rounded-[1.25rem] border border-orange-200 bg-[#fff7ed] p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-full bg-white p-2 text-orange-600">
+                            <Bike className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-700">
+                              Worker bike pickup
+                            </p>
+                            <h4 className="mt-2 text-lg font-semibold text-slate-950">
+                              {activeBooking.workerRide.rideCode}
+                            </h4>
+                            <p className="mt-1 text-sm text-slate-700">
+                              {activeBooking.workerRide.assignedRider?.name ||
+                                "Rider assignment pending"}{" "}
+                              |{" "}
+                              {activeBooking.workerRide.assignedRider?.vehicleNumber ||
+                                "Bike details pending"}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getRideStatusTone(
+                            activeBooking.workerRide.status
+                          )}`}
+                        >
+                          {formatRideStatus(activeBooking.workerRide.status)}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 md:grid-cols-3">
+                        <InfoPanel
+                          label="Pickup OTP"
+                          value={activeBooking.workerRide.pickupOtp || "Pending"}
+                        />
+                        <InfoPanel
+                          label="Ride fare"
+                          value={`Rs. ${activeBooking.workerRide.finalFare}`}
+                        />
+                        <InfoPanel
+                          label="Waiting charge"
+                          value={`Rs. ${activeBooking.workerRide.waiting.charge}`}
+                        />
+                      </div>
+
+                      <div className="mt-4 grid gap-3 text-sm text-slate-700 md:grid-cols-2">
+                        <p>
+                          Pickup: {activeBooking.workerRide.pickup.label} |{" "}
+                          {activeBooking.workerRide.pickup.address}
+                        </p>
+                        <p>
+                          Drop: {activeBooking.workerRide.drop.label} |{" "}
+                          {activeBooking.workerRide.drop.address}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mt-5">
                     <WorkerTrackingMap
                       customerCoordinates={activeBooking.customerLocation}
@@ -1448,6 +1522,18 @@ export default function WorkerPortalClient() {
                         dashboard.worker.liveCoordinates
                       }
                       workerLabel={dashboard.worker.fullName}
+                      pickupCoordinates={activeBooking.workerRide?.pickup.coordinates || null}
+                      dropCoordinates={activeBooking.workerRide?.drop.coordinates || null}
+                      riderCoordinates={
+                        activeBooking.workerRide?.riderLiveLocation?.coordinates ||
+                        activeBooking.workerRide?.assignedRider?.liveCoordinates ||
+                        null
+                      }
+                      riderLabel={activeBooking.workerRide?.assignedRider?.name}
+                      riderVehicleNumber={
+                        activeBooking.workerRide?.assignedRider?.vehicleNumber
+                      }
+                      rideCode={activeBooking.workerRide?.rideCode}
                     />
                   </div>
 

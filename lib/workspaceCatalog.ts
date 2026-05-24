@@ -1,8 +1,13 @@
 import {
+  BadgeIndianRupee,
   BriefcaseBusiness,
+  Crown,
   Headset,
   House,
   LucideIcon,
+  Settings2,
+  ShieldCheck,
+  UserRoundSearch,
 } from "lucide-react";
 import { canAccessWorkspace, type WorkspaceKey } from "@/lib/portalAccess";
 
@@ -62,6 +67,46 @@ export const workspaceNavigation: WorkspaceNavItem[] = [
     description:
       "Single company dashboard for HR, operations, finance, quality, and leadership teams.",
     icon: BriefcaseBusiness,
+  },
+  {
+    key: "hr",
+    href: "/corporate/hr/access-control",
+    label: "HR Dashboard",
+    shortLabel: "HR",
+    description: "Employee access, recruiter desk, and hiring operations.",
+    icon: UserRoundSearch,
+  },
+  {
+    key: "admin",
+    href: "/corporate/catalog/portal-settings",
+    label: "Admin Dashboard",
+    shortLabel: "Admin",
+    description: "Catalog, city controls, and platform operating settings.",
+    icon: Settings2,
+  },
+  {
+    key: "accounts",
+    href: "/corporate/finance/payment-watch",
+    label: "Accounts Dashboard",
+    shortLabel: "Accounts",
+    description: "Payment watch, refunds, settlement, and payout follow-through.",
+    icon: BadgeIndianRupee,
+  },
+  {
+    key: "audit",
+    href: "/audit",
+    label: "Audit Dashboard",
+    shortLabel: "Audit",
+    description: "Quality review, incidents, compliance, and recovery checks.",
+    icon: ShieldCheck,
+  },
+  {
+    key: "founder",
+    href: "/corporate/command-center/daily-brief",
+    label: "Founder Dashboard",
+    shortLabel: "Founder",
+    description: "All-access leadership command across every operating lane.",
+    icon: Crown,
   },
 ];
 

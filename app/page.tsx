@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  Bike,
   CheckCircle2,
   ChevronRight,
   MapPin,
@@ -126,6 +127,13 @@ export default function HomePage() {
                 >
                   Open cart
                   <ShoppingBag className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/rides"
+                  className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-sky-300"
+                >
+                  Book bike ride
+                  <Bike className="h-4 w-4" />
                 </Link>
                 <Link
                   href="/workers"

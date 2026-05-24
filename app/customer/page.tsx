@@ -1,5 +1,5 @@
-import WorkspaceDashboard from "@/app/components/workspace/WorkspaceDashboard";
+import EnterpriseCustomerDashboard from "@/app/components/enterprise/EnterpriseCustomerDashboard";
 
 export default function CustomerPage() {
-  return <WorkspaceDashboard workspace="customer" />;
+  return <EnterpriseCustomerDashboard />;
 }

@@ -2,10 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Headset } from "lucide-react";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
+import { syncWorkspaceSessionCookies } from "@/lib/clientAuthSession";
+import { getClientUserProfile } from "@/lib/clientUserProfile";
 import { canAccessWorkspace } from "@/lib/portalAccess";
 
 export default function AgentLoginPage() {
@@ -26,8 +27,7 @@ export default function AgentLoginPage() {
 
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
-      const snapshot = await getDoc(doc(db, "users", result.user.uid));
-      const data = snapshot.exists() ? snapshot.data() : null;
+      const data = await getClientUserProfile(result.user);
 
       if (!canAccessWorkspace(data, "agent", result.user.email || email)) {
         await signOut(auth);
@@ -36,9 +36,8 @@ export default function AgentLoginPage() {
         );
       }
 
-      await fetch("/api/agent-session", {
-        method: "POST",
-      });
+      localStorage.setItem("loginTime", Date.now().toString());
+      await syncWorkspaceSessionCookies(data, result.user.email || email);
 
       router.push(nextPath);
     } catch (loginError) {

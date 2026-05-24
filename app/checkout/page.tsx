@@ -140,7 +140,9 @@ export default function CheckoutPage() {
       paymentMethod,
       customerLocation: customerCoordinates,
       items: items.map((item) => ({
+        serviceSlug: item.serviceSlug,
         serviceName: item.serviceName,
+        subcategorySlug: item.subcategorySlug || null,
         subcategoryName: item.subcategoryName || null,
         packageName: item.packageName,
         packagePrice: item.packagePrice,

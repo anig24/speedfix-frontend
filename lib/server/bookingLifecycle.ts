@@ -18,6 +18,7 @@ import {
   type Coordinates,
 } from "@/lib/liveTracking";
 import { serverDb } from "@/lib/firebase-server";
+import { createWorkerTransferRide } from "@/lib/server/rideDispatch";
 
 type WorkerSource = "workers" | "employees";
 
@@ -391,9 +392,30 @@ export async function createTrackedBooking(bookingData: BookingPayload) {
     }).catch(() => undefined);
   }
 
+  const rideDispatch = worker
+    ? await createWorkerTransferRide({
+        bookingId: bookingRef.id,
+        bookingCode: `SFX-${bookingRef.id.slice(0, 8).toUpperCase()}`,
+        bookingData,
+        worker: {
+          id: worker.id,
+          name: worker.name,
+          phone: worker.phone,
+          city: worker.city,
+          liveLocationLabel: worker.liveLocationLabel,
+          liveCoordinates: worker.liveCoordinates,
+        },
+        trackingTimeline: timeline,
+      }).catch((error) => {
+        console.error("WORKER_RIDE_DISPATCH_ERROR", error);
+        return null;
+      })
+    : null;
+
   return {
     bookingId: bookingRef.id,
     assigned: Boolean(worker),
     worker,
+    rideDispatch,
   };
 }

@@ -12,7 +12,9 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
+  Bike,
   BriefcaseBusiness,
+  LogIn,
   LogOut,
   MapPin,
   Menu,
@@ -23,13 +25,13 @@ import {
 import { type User, onAuthStateChanged, signOut } from "firebase/auth";
 import {
   collection,
-  doc,
-  getDoc,
   onSnapshot,
   query,
   where,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { clearWorkspaceSessionCookies } from "@/lib/clientAuthSession";
+import { getClientUserProfile } from "@/lib/clientUserProfile";
 import LocationGate from "@/app/components/LocationGate";
 import { getCartCount, readCart, subscribeToCart } from "@/lib/cart";
 import {
@@ -67,6 +69,8 @@ type UserProfile = {
 
 const primaryLinks = [
   { href: "/services", label: "Services" },
+  { href: "/rides", label: "Bike rides" },
+  { href: "/riders", label: "Riders" },
   { href: "/workers", label: "Workers" },
   { href: "/careers", label: "Careers" },
   { href: "/about", label: "About" },
@@ -74,6 +78,11 @@ const primaryLinks = [
 ];
 
 const customerLinks = [
+  {
+    href: "/rides",
+    label: "Bike rides",
+    icon: <Bike className="h-4 w-4" />,
+  },
   {
     href: "/cart",
     label: "Cart",
@@ -175,8 +184,7 @@ export default function Navbar() {
     let active = true;
 
     const loadProfile = async () => {
-      const profileSnapshot = await getDoc(doc(db, "users", user.uid));
-      const profile = profileSnapshot.data() as UserProfile | undefined;
+      const profile = (await getClientUserProfile(user)) as UserProfile;
 
       if (!active) {
         return;
@@ -270,6 +278,7 @@ export default function Navbar() {
   }, [user]);
 
   const handleLogout = async () => {
+    await clearWorkspaceSessionCookies();
     await signOut(auth);
     localStorage.removeItem("loginTime");
     window.location.href = "/auth/login";
@@ -466,16 +475,17 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="hidden items-center gap-2 sm:flex">
+              <div className="flex items-center gap-2">
                 <Link
                   href="/auth/login"
-                  className="rounded-full px-4 py-2 text-sm font-semibold text-white/92 transition hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-full border border-orange-400/35 bg-orange-500 px-3 py-2 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,106,0,0.28)] transition hover:bg-orange-400 sm:px-4"
                 >
+                  <LogIn className="h-4 w-4" />
                   Sign in
                 </Link>
                 <Link
                   href="/auth/login"
-                    className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-[0_12px_24px_rgba(255,255,255,0.08)] transition hover:bg-slate-100"
+                    className="hidden rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-[0_12px_24px_rgba(255,255,255,0.08)] transition hover:bg-slate-100 lg:inline-flex"
                 >
                   Get started
                 </Link>

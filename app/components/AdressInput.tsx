@@ -1,9 +1,15 @@
 "use client";
 import { useState } from "react";
 
+type AddressResult = {
+  display_name: string;
+  lat: string;
+  lon: string;
+};
+
 export default function AddressInput() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<AddressResult[]>([]);
 
   const searchAddress = async (value: string) => {
     setQuery(value);
@@ -14,7 +20,7 @@ export default function AddressInput() {
       `https://nominatim.openstreetmap.org/search?q=${value}&format=json`
     );
 
-    const data = await res.json();
+    const data = (await res.json()) as AddressResult[];
     setResults(data);
   };
 

@@ -3,6 +3,7 @@ import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { sortBookingTimeline, type BookingTimelineEvent } from "@/lib/bookingTracking";
 import { serverDb } from "@/lib/firebase-server";
 import { extractCoordinates } from "@/lib/liveTracking";
+import { getRideDispatchesForBookings } from "@/lib/server/rideDispatch";
 
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -90,16 +91,29 @@ export async function POST(request: Request) {
       query(collection(serverDb, "bookings"), where("assignedWorkerId", "==", workerDoc.id))
     );
 
-    const bookings = bookingsSnapshot.docs
+    const bookingRecords = bookingsSnapshot.docs
       .map((snapshot): Record<string, unknown> & { id: string } => ({
         id: snapshot.id,
         ...(snapshot.data() as Record<string, unknown>),
       }))
-      .sort(sortBookingsByLatest)
-      .map((booking) => {
+      .sort(sortBookingsByLatest);
+    const rideDispatches = await getRideDispatchesForBookings(
+      bookingRecords.map((booking) => booking.id),
+      true
+    );
+    const rideByBookingId = new Map(
+      rideDispatches.map((ride) => [ride.sourceBookingId, ride])
+    );
+
+    const bookings = bookingRecords.map((booking) => {
         const timeline = Array.isArray(booking.trackingTimeline)
           ? sortBookingTimeline(booking.trackingTimeline as BookingTimelineEvent[])
           : [];
+        const workerRide =
+          rideByBookingId.get(booking.id) ||
+          (typeof booking.workerRide === "object" && booking.workerRide !== null
+            ? booking.workerRide
+            : null);
 
         return {
           bookingId: booking.id,
@@ -143,6 +157,7 @@ export async function POST(request: Request) {
                   ),
                 }
               : null,
+          workerRide,
           timeline,
         };
       });

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import EnterpriseWorkflowManagementDashboard from "@/app/components/enterprise/EnterpriseWorkflowManagementDashboard";
 import {
   workspaceBlueprints,
   workspaceNavigation,
@@ -54,6 +55,12 @@ export default function WorkspaceDashboard({
           </article>
         ))}
       </section>
+
+      <EnterpriseWorkflowManagementDashboard
+        workspace={workspace}
+        audience={workspace === "customer" ? "customer" : workspace === "founder" ? "founder" : "employee"}
+        compact={workspace === "customer"}
+      />
 
       <section className="rounded-[2rem] border border-slate-200 bg-white p-6 premium-card">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">

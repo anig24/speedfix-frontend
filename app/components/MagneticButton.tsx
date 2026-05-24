@@ -1,9 +1,14 @@
 "use client";
 
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring, type HTMLMotionProps } from "framer-motion";
+import type { MouseEvent } from "react";
 import { useRef } from "react";
 
-export default function MagneticButton({ children, ...props }: any) {
+export default function MagneticButton({
+  children,
+  className = "",
+  ...props
+}: HTMLMotionProps<"button">) {
   const ref = useRef<HTMLButtonElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -11,7 +16,7 @@ export default function MagneticButton({ children, ...props }: any) {
   const springX = useSpring(x, { stiffness: 150, damping: 15 });
   const springY = useSpring(y, { stiffness: 150, damping: 15 });
 
-  const handleMouseMove = (e: any) => {
+  const handleMouseMove = (e: MouseEvent<HTMLButtonElement>) => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -33,7 +38,7 @@ export default function MagneticButton({ children, ...props }: any) {
       style={{ x: springX, y: springY }}
       onMouseMove={handleMouseMove}
       onMouseLeave={reset}
-      className="bg-[#FF6A00] text-white px-8 py-4 rounded-lg font-semibold"
+      className={`bg-[#FF6A00] text-white px-8 py-4 rounded-lg font-semibold ${className}`}
       {...props}
     >
       {children}

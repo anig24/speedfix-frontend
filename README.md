@@ -20,6 +20,24 @@ pincode lookup, booking guidance, and service request lead creation.
 Use the `www` domain for both fields. The non-`www` domain redirects, and some
 OpenAPI importers do not follow that redirect while validating the schema.
 
+## Management Backend
+
+Internal work and employee management now runs through Next.js API routes:
+
+```text
+GET/POST /api/management/work
+GET/PATCH/DELETE /api/management/work/:workId
+GET/POST /api/management/employees
+GET/PATCH/DELETE /api/management/employees/:employeeId
+```
+
+Work items are stored in `corporateWorkflowItems`; employee access profiles are
+stored in `users`, with audit entries in `managementAuditLog` and
+`employeeAccessLog`. Set `SPEEDFIX_MANAGEMENT_API_KEY` in production if these
+routes should also accept server-to-server calls through the
+`x-speedfix-management-key` header. Browser calls send the signed-in Firebase ID
+token and are checked against the employee role stored in `users`.
+
 First, run the development server:
 
 ```bash

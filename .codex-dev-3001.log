@@ -1,0 +1,80 @@
+
+> speedfix-frontend@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3001
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://127.0.0.1:3001
+- Network:       http://127.0.0.1:3001
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1845ms
+○ Compiling /rides ...
+ GET /rides 200 in 6.3s (compile: 5.8s, render: 520ms)
+ GET /riders 200 in 1692ms (compile: 1573ms, render: 119ms)
+○ Compiling /track ...
+✓ Finished writing to filesystem cache in 12.8s
+✓ Finished filesystem cache database compaction in 16.9s
+✓ Finished filesystem cache database compaction in 15.2s
+
+thread 'tokio-runtime-worker' (14128) panicked at C:\actions-runner\_work\next.js\next.js\turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:156:17:
+Failed to restore task data (corrupted database or bug): Meta for <EcmascriptBuildNodeChunk as OutputAsset>::path (TaskId 55105))
+
+Caused by:
+    0: Looking up data for TaskId 55105 from database failed
+    1: Unable to open static sorted file referenced from 00009251.meta
+    2: Unable to open static sorted file 00009249.sst
+    3: Insufficient system resources exist to complete the requested service. (os error 1450)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+<--- Last few GCs --->
+
+[32152:000001E2B58E3000]    18956 ms: Scavenge 22.0 (30.9) -> 15.7 (32.2) MB, pooled: 0 MB, 1.39 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+[32152:000001E2B58E3000]    27131 ms: Mark-Compact 22.6 (33.4) -> 15.7 (34.4) MB, pooled: 0 MB, 7044.09 / 0.00 ms  (+ 0.1 ms in 6 steps since start of marking, biggest step 0.0 ms, walltime since start of marking 7051 ms) (average mu = 0.740, current mu =
+FATAL ERROR: Zone Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[30480:000001FD01AA2000]      394 ms: Scavenge 13.3 (18.2) -> 11.2 (19.4) MB, pooled: 0 MB, 1.40 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+[30480:000001FD01AA2000]    17651 ms: Scavenge 15.3 (19.9) -> 13.4 (21.4) MB, pooled: 3 MB, 13087.42 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+
+FATAL ERROR: Zone Allocation failed - process out of memory
+----- Native stack trace -----
+
+ 1: 00007FF7CEFDC36F 
+ 2: 00007FF7CFC24D77 
+ 3: 00007FF7CF59FBD6 
+ 4: 00007FF7D05C3EB0 
+ 5: 00007FF7D03DD989 
+ 6: 00007FF7CF497D96 
+ 7: 00007FF7CF47568F 
+ 8: 00007FF7CFBA1023 
+ 9: 00007FF7CFBA30FA 
+10: 00007FF7CF626271 
+11: 00007FF7CF62436F 
+12: 000001FD3A0F733A 
+ 1: 00007FF7CEFDC36F node::OnFatalError+1343
+ 2: 00007FF7CFC24D77 v8::Function::NewInstance+423
+ 3: 00007FF7CF59FBD6 v8::SnapshotCreator::GetIsolate+56566
+ 4: 00007FF7CF44DC51 SSL_CTX_get_client_CA_list+552129
+ 5: 00007FF7CF3EE773 SSL_CTX_get_client_CA_list+161763
+ 6: 00007FF7CF3EE6ED SSL_CTX_get_client_CA_list+161629
+ 7: 00007FF7CF3EFFB5 SSL_CTX_get_client_CA_list+167973
+ 8: 00007FF7CF3F1839 SSL_CTX_get_client_CA_list+174249
+ 9: 00007FF7CF3F5AEB SSL_CTX_get_client_CA_list+191323
+10: 00007FF7CF3F5EF3 SSL_CTX_get_client_CA_list+192355
+11: 00007FF7CF42B7F8 SSL_CTX_get_client_CA_list+411752
+12: 00007FF7CF400D5B SSL_CTX_get_client_CA_list+237003
+13: 00007FF7CF478EC6 SSL_CTX_get_client_CA_list+728886
+14: 00007FF7CF477BE0 SSL_CTX_get_client_CA_list+724048
+15: 00007FF7CF4759DA SSL_CTX_get_client_CA_list+715338
+16: 00007FF7CFB989AF X509_STORE_set_get_issuer+200559
+17: 00007FF7CF4774BB SSL_CTX_get_client_CA_list+722219
+18: 00007FF7D040570F v8::platform::DefaultJobHandle::UpdatePriority+591
+19: 00007FF7CEF2CD8E node::GetNodeReport+90334
+20: 00007FF7CFC7A096 uv_thread_detach+150
+21: 00007FF7D0ED92B3 v8::base::UnsignedDivisionByConstant<unsigned __int64>+2904003
+22: 00007FFB8CEFE957 BaseThreadInitThunk+23
+23: 00007FFB8DDC427C RtlUserThreadStart+44

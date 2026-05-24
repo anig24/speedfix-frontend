@@ -10,18 +10,25 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
-import { getDefaultWorkspaceHref } from "@/lib/portalAccess";
+import {
+  getPostLoginHref,
+  syncWorkspaceSessionCookies,
+} from "@/lib/clientAuthSession";
+import { getClientUserProfile } from "@/lib/clientUserProfile";
 
 export default function AuthPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const requestedPath = searchParams.get("next");
   const [isLogin, setIsLogin] = useState(true);
   const [captchaValue, setCaptchaValue] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
@@ -43,24 +50,20 @@ export default function AuthPage() {
     }
 
     const syncExistingSession = async () => {
-      const snapshot = await getDoc(doc(db, "users", auth.currentUser!.uid));
-      const data = snapshot.exists()
-        ? snapshot.data()
-        : {
-            email: auth.currentUser?.email || "",
-            role: "CUSTOMER",
-          };
+      const profile = await getClientUserProfile(auth.currentUser!);
 
-      router.push(getDefaultWorkspaceHref(data, auth.currentUser?.email));
+      await syncWorkspaceSessionCookies(profile, auth.currentUser?.email);
+      router.push(getPostLoginHref(profile, auth.currentUser?.email, requestedPath));
     };
 
     syncExistingSession().catch(() => {
       router.push("/customer");
     });
-  }, [router]);
+  }, [requestedPath, router]);
 
-  const redirectUser = (record: unknown, email?: string | null) => {
-    router.push(getDefaultWorkspaceHref(record, email));
+  const redirectUser = async (record: unknown, email?: string | null) => {
+    await syncWorkspaceSessionCookies(record, email);
+    router.push(getPostLoginHref(record, email, requestedPath));
   };
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
@@ -72,22 +75,18 @@ export default function AuthPage() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const res = await signInWithEmailAndPassword(auth, form.email, form.password);
       localStorage.setItem("loginTime", Date.now().toString());
 
-      const snapshot = await getDoc(doc(db, "users", res.user.uid));
-      redirectUser(
-        snapshot.exists()
-          ? snapshot.data()
-          : {
-              email: res.user.email || form.email,
-              role: "CUSTOMER",
-            },
-        res.user.email
-      );
+      const profile = await getClientUserProfile(res.user);
+      await redirectUser(profile, res.user.email);
     } catch (loginError: unknown) {
       setError(loginError instanceof Error ? loginError.message : "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,6 +98,8 @@ export default function AuthPage() {
       setError("Please verify reCAPTCHA");
       return;
     }
+
+    setLoading(true);
 
     try {
       const res = await createUserWithEmailAndPassword(
@@ -116,21 +117,26 @@ export default function AuthPage() {
         createdAt: new Date(),
       });
 
-      redirectUser(
+      await redirectUser(
         {
           name: form.name,
           email: form.email,
           role: "CUSTOMER",
+          employmentStatus: "CUSTOMER",
+          active: true,
         },
         form.email
       );
     } catch (signupError: unknown) {
       setError(signupError instanceof Error ? signupError.message : "Signup failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     setError("");
+    setLoading(true);
 
     try {
       const provider = new GoogleAuthProvider();
@@ -150,20 +156,14 @@ export default function AuthPage() {
         });
       }
 
-      redirectUser(
-        snapshot.exists()
-          ? snapshot.data()
-          : {
-              name: res.user.displayName,
-              email: res.user.email,
-              role: "CUSTOMER",
-            },
-        res.user.email
-      );
+      const profile = await getClientUserProfile(res.user);
+      await redirectUser(profile, res.user.email);
     } catch (googleError: unknown) {
       setError(
         googleError instanceof Error ? googleError.message : "Google login failed"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -226,11 +226,16 @@ export default function AuthPage() {
 
                 {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
 
-                <button type="submit" className="btn mt-6">
-                  Login
+                <button type="submit" disabled={loading} className="btn mt-6">
+                  {loading ? "Signing in..." : "Login"}
                 </button>
 
-                <button type="button" onClick={handleGoogleLogin} className="google">
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  className="google"
+                >
                   <Image
                     src="https://developers.google.com/identity/images/g-logo.png"
                     alt="Google"
@@ -304,8 +309,8 @@ export default function AuthPage() {
 
                 {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
 
-                <button type="submit" className="btn mt-6">
-                  Create Account
+                <button type="submit" disabled={loading} className="btn mt-6">
+                  {loading ? "Creating account..." : "Create Account"}
                 </button>
               </motion.form>
             )}
@@ -359,6 +364,12 @@ export default function AuthPage() {
           border-radius: 8px;
           width: 100%;
           font-weight: 500;
+        }
+
+        .btn:disabled,
+        .google:disabled {
+          cursor: not-allowed;
+          opacity: 0.7;
         }
 
         .google {

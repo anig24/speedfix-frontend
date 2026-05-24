@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { ArrowRight, Layers3 } from "lucide-react";
+import EnterpriseEmployeeDashboard from "@/app/components/enterprise/EnterpriseEmployeeDashboard";
+import EnterpriseWorkflowManagementDashboard from "@/app/components/enterprise/EnterpriseWorkflowManagementDashboard";
 import { cleanCopy } from "@/lib/cleanCopy";
 import { getCorporateSubcategoriesForScope } from "@/lib/corporateWorkspaceAccess";
 import { useCorporateAccess } from "@/app/components/corporate/CorporateAccessContext";
@@ -18,6 +20,18 @@ export default function CorporateRoleDashboard() {
 
   return (
     <div className="space-y-8">
+      <EnterpriseEmployeeDashboard
+        workspace="corporate"
+        fallbackLabel={scope.label}
+      />
+
+      <EnterpriseWorkflowManagementDashboard
+        workspace="corporate"
+        audience={scope.key === "executive" ? "founder" : "employee"}
+        title={`${scope.label} Workflow Management`}
+        description="A multi-function command dashboard for demand, fulfillment, people, finance, support, catalog, risk, assets, analytics, and field force work. Founder sees the full operating grid; each employee role sees the lanes they are allowed to run."
+      />
+
       <section className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>

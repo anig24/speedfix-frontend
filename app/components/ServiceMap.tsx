@@ -3,9 +3,22 @@
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useEffect } from "react";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+type Coordinates = {
+  lat: number;
+  lng: number;
+};
+
+type ServiceMapProps = {
+  coordinates: Coordinates | null;
+  setCoordinates: (coordinates: Coordinates) => void;
+};
+
+const defaultIconPrototype = L.Icon.Default.prototype as L.Icon.Default & {
+  _getIconUrl?: unknown;
+};
+
+delete defaultIconPrototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -15,7 +28,7 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-function LocationPicker({ setCoordinates }: any) {
+function LocationPicker({ setCoordinates }: Pick<ServiceMapProps, "setCoordinates">) {
   useMapEvents({
     click(e) {
       setCoordinates({
@@ -27,7 +40,7 @@ function LocationPicker({ setCoordinates }: any) {
   return null;
 }
 
-export default function ServiceMap({ coordinates, setCoordinates }: any) {
+export default function ServiceMap({ coordinates, setCoordinates }: ServiceMapProps) {
   return (
     <MapContainer
       center={[20.5937, 78.9629]}

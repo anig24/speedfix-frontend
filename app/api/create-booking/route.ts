@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createTrackedBooking } from "@/lib/server/bookingLifecycle";
+import { createMarketplaceBooking } from "@/lib/server/serviceMarketplaceBackend";
 
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -29,17 +29,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await createTrackedBooking({
-      ...bookingData,
+    const result = await createMarketplaceBooking({
+      bookingData: {
+        ...bookingData,
+      },
       status: "PENDING",
       paymentStatus: "PENDING",
     });
+
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
 
     return NextResponse.json({
       success: true,
       bookingId: result.bookingId,
       assigned: result.assigned,
       worker: result.worker,
+      rideDispatch: result.rideDispatch,
+      workflow: result.workflow,
     });
   } catch (error) {
     console.error("CREATE_BOOKING_ERROR", error);

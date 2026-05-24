@@ -4,15 +4,15 @@ import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { LoaderCircle, LogOut, ShieldCheck } from "lucide-react";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
+import { clearWorkspaceSessionCookies } from "@/lib/clientAuthSession";
+import { getClientUserProfile } from "@/lib/clientUserProfile";
 import {
   AGENT_SESSION_COOKIE,
   getAgentRoleLabel,
-  isActiveAgentUser,
 } from "@/lib/agentAuth";
-import { normalizeRole } from "@/lib/portalAccess";
+import { canAccessWorkspace, normalizeRole } from "@/lib/portalAccess";
 import { agentQuickLinks } from "@/lib/agentPortal";
 import EmployeeHierarchyPanel from "@/app/components/employee/EmployeeHierarchyPanel";
 
@@ -28,9 +28,7 @@ type AgentProfile = {
 };
 
 async function clearAgentSession() {
-  await fetch("/api/agent-session", {
-    method: "DELETE",
-  });
+  await clearWorkspaceSessionCookies();
 
   document.cookie = `${AGENT_SESSION_COOKIE}=; max-age=0; path=/`;
   localStorage.removeItem("loginTime");
@@ -52,10 +50,9 @@ export default function AgentShell({ children }: AgentShellProps) {
         return;
       }
 
-      const snapshot = await getDoc(doc(db, "users", user.uid));
-      const data = snapshot.exists() ? snapshot.data() : null;
+      const data = await getClientUserProfile(user);
 
-      if (!isActiveAgentUser(data)) {
+      if (!canAccessWorkspace(data, "agent", user.email || data.email)) {
         await clearAgentSession();
         await signOut(auth);
         setProfile(null);

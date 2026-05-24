@@ -37,18 +37,47 @@ const workerIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
+const riderIcon = L.divIcon({
+  className: "speedfix-rider-map-icon",
+  html: `
+    <div class="speedfix-rider-marker">
+      <div class="speedfix-rider-banner">SpeedFix</div>
+      <div class="speedfix-bike-body">
+        <span></span>
+        <strong>BIKE</strong>
+        <span></span>
+      </div>
+    </div>
+  `,
+  iconSize: [92, 54],
+  iconAnchor: [46, 48],
+  popupAnchor: [0, -44],
+});
+
 type WorkerTrackingMapProps = {
   customerCoordinates?: Coordinates | null;
   workerCoordinates?: Coordinates | null;
   workerLabel?: string | null;
+  pickupCoordinates?: Coordinates | null;
+  dropCoordinates?: Coordinates | null;
+  riderCoordinates?: Coordinates | null;
+  riderLabel?: string | null;
+  riderVehicleNumber?: string | null;
+  rideCode?: string | null;
 };
 
 export default function WorkerTrackingMap({
   customerCoordinates,
   workerCoordinates,
   workerLabel,
+  pickupCoordinates,
+  dropCoordinates,
+  riderCoordinates,
+  riderLabel,
+  riderVehicleNumber,
+  rideCode,
 }: WorkerTrackingMapProps) {
-  const center = workerCoordinates || customerCoordinates || {
+  const center = riderCoordinates || workerCoordinates || pickupCoordinates || customerCoordinates || dropCoordinates || {
     latitude: 20.5937,
     longitude: 78.9629,
   };
@@ -57,10 +86,28 @@ export default function WorkerTrackingMap({
     <div className="h-[360px] overflow-hidden rounded-[1.75rem] border border-slate-200">
       <MapContainer
         center={[center.latitude, center.longitude]}
-        zoom={workerCoordinates ? 13 : 11}
+        zoom={riderCoordinates || workerCoordinates ? 13 : 11}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+        {pickupCoordinates && (
+          <Marker
+            position={[pickupCoordinates.latitude, pickupCoordinates.longitude]}
+            icon={customerIcon}
+          >
+            <Popup>Ride pickup location</Popup>
+          </Marker>
+        )}
+
+        {dropCoordinates && (
+          <Marker
+            position={[dropCoordinates.latitude, dropCoordinates.longitude]}
+            icon={workerIcon}
+          >
+            <Popup>Ride drop location</Popup>
+          </Marker>
+        )}
 
         {customerCoordinates && (
           <Marker
@@ -77,6 +124,19 @@ export default function WorkerTrackingMap({
             icon={workerIcon}
           >
             <Popup>{workerLabel || "Assigned worker"}</Popup>
+          </Marker>
+        )}
+
+        {riderCoordinates && (
+          <Marker
+            position={[riderCoordinates.latitude, riderCoordinates.longitude]}
+            icon={riderIcon}
+          >
+            <Popup>
+              {riderLabel || "SpeedFix bike rider"}
+              {riderVehicleNumber ? ` | ${riderVehicleNumber}` : ""}
+              {rideCode ? ` | ${rideCode}` : ""}
+            </Popup>
           </Marker>
         )}
       </MapContainer>

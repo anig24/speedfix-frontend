@@ -4,9 +4,10 @@ import Link from "next/link";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { LoaderCircle, LogOut, ShieldCheck } from "lucide-react";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
+import { clearWorkspaceSessionCookies } from "@/lib/clientAuthSession";
+import { getClientUserProfile } from "@/lib/clientUserProfile";
 import {
   canAccessWorkspace,
   formatRoleLabel,
@@ -58,14 +59,7 @@ export default function ProtectedWorkspaceShell({
         return;
       }
 
-      const snapshot = await getDoc(doc(db, "users", user.uid));
-      const data = snapshot.exists()
-        ? snapshot.data()
-        : {
-            name: user.displayName || "SpeedFix User",
-            email: user.email || "",
-            role: "CUSTOMER",
-          };
+      const data = await getClientUserProfile(user);
 
       if (!canAccessWorkspace(data, workspace, user.email || data.email)) {
         setProfile(null);
@@ -94,6 +88,7 @@ export default function ProtectedWorkspaceShell({
   }, [pathname, router, workspace]);
 
   const handleLogout = async () => {
+    await clearWorkspaceSessionCookies();
     await signOut(auth);
     localStorage.removeItem("loginTime");
     router.replace("/auth/login");
