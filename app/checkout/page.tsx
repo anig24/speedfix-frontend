@@ -24,8 +24,9 @@ import {
   writeCheckoutAddress,
 } from "@/lib/cart";
 import { readStoredCoordinates } from "@/lib/locationStorage";
+import { readJsonResponse } from "@/lib/readJsonResponse";
 
-type PaymentMethod = "razorpay" | "pay-on-service";
+type PaymentMethod = "razorpay" | "pay-later" | "pay-on-service";
 type RazorpayWindow = Window &
   typeof globalThis & {
     Razorpay?: new (options: unknown) => { open: () => void };
@@ -166,7 +167,9 @@ export default function CheckoutPage() {
     }, 2200);
   };
 
-  const handlePayAfterService = async () => {
+  const handleDeferredPayment = async (
+    paymentStatus: "PAY_LATER" | "PENDING"
+  ) => {
     const response = await fetch("/api/create-booking", {
       method: "POST",
       headers: {
@@ -175,12 +178,12 @@ export default function CheckoutPage() {
       body: JSON.stringify({
         bookingData: {
           ...buildBookingData(),
-          paymentStatus: "PENDING",
+          paymentStatus,
         },
       }),
     });
 
-    const result = await response.json();
+    const result = await readJsonResponse<{ error?: string; bookingId?: string; assigned?: boolean }>(response);
 
     if (!response.ok) {
       throw new Error(result.error || "Unable to place your booking.");
@@ -201,7 +204,12 @@ export default function CheckoutPage() {
       body: JSON.stringify({ amount: finalTotal }),
     });
 
-    const orderData = await orderResponse.json();
+    const orderData = await readJsonResponse<{
+      error?: string;
+      amount?: number;
+      currency?: string;
+      id?: string;
+    }>(orderResponse);
 
     if (!orderResponse.ok) {
       throw new Error(orderData.error || "Unable to create payment order.");
@@ -209,8 +217,8 @@ export default function CheckoutPage() {
 
     const options = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: orderData.amount,
-      currency: orderData.currency,
+      amount: orderData.amount || 0,
+      currency: orderData.currency || "INR",
       name: "SpeedFix",
       description: items[0]?.serviceName || "SpeedFix booking",
       order_id: orderData.id,
@@ -233,10 +241,18 @@ export default function CheckoutPage() {
           }),
         });
 
-        const verifyResult = await verifyResponse.json();
+        const verifyResult = await readJsonResponse<{
+          error?: string;
+          bookingId?: string;
+          assigned?: boolean;
+        }>(verifyResponse);
 
         if (!verifyResponse.ok) {
           throw new Error(verifyResult.error || "Payment verification failed.");
+        }
+
+        if (!verifyResult.bookingId) {
+          throw new Error("Payment verified, but booking ID was not returned.");
         }
 
         finishBooking(verifyResult.bookingId, Boolean(verifyResult.assigned));
@@ -273,8 +289,10 @@ export default function CheckoutPage() {
     setCouponMessage("");
 
     try {
-      if (paymentMethod === "pay-on-service") {
-        const result = await handlePayAfterService();
+      if (paymentMethod === "pay-later" || paymentMethod === "pay-on-service") {
+        const result = await handleDeferredPayment(
+          paymentMethod === "pay-later" ? "PAY_LATER" : "PENDING"
+        );
         finishBooking(result.bookingId, Boolean(result.assigned));
       } else {
         await handleRazorpay();
@@ -444,6 +462,11 @@ export default function CheckoutPage() {
                     id: "razorpay" as const,
                     title: "Razorpay secure checkout",
                     description: "Pay now with card, UPI, or net banking.",
+                  },
+                  {
+                    id: "pay-later" as const,
+                    title: "SpeedFix PayLater",
+                    description: "Book now and pay after confirmation with support follow-up.",
                   },
                   {
                     id: "pay-on-service" as const,

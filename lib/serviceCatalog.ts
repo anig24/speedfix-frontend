@@ -52,7 +52,7 @@ export const serviceCatalog: ServiceCatalogItem[] = [
     tagline: "Deep, move-in and recurring cleaning delivered by trained crews.",
     description:
       "Give every room a reset with apartment and villa cleaning designed for busy homes, tenants and managed communities.",
-    image: "/services/cleaning.png",
+    image: "/services/speedfix-cleaning-kitchen.png",
     rating: 4.9,
     reviews: "1.8k reviews",
     jobsCompleted: "18k homes served",
@@ -220,7 +220,7 @@ export const serviceCatalog: ServiceCatalogItem[] = [
     tagline: "Fault diagnostics, fittings and minor electrical work at home.",
     description:
       "From switchboards and fans to urgent breakdowns, get verified electricians with transparent pricing and digital job notes.",
-    image: "/services/electrician.png",
+    image: "/services/speedfix-electrician-switch.png",
     rating: 4.8,
     reviews: "2.4k reviews",
     jobsCompleted: "21k electrical jobs",
@@ -388,7 +388,7 @@ export const serviceCatalog: ServiceCatalogItem[] = [
     tagline: "Leak fixes, fittings and bathroom or kitchen plumbing on demand.",
     description:
       "Book plumbers for quick leak resolution, tap replacements and drain issues with slot-based arrival and live updates.",
-    image: "/services/plumbing.png",
+    image: "/services/speedfix-plumbing-sink.png",
     rating: 4.8,
     reviews: "1.6k reviews",
     jobsCompleted: "14k plumbing jobs",
@@ -556,7 +556,7 @@ export const serviceCatalog: ServiceCatalogItem[] = [
     tagline: "General service, jet wash and gas checkups for home ACs.",
     description:
       "Keep cooling efficient with preventive AC servicing, fault checks and repair-ready escalation for split and window units.",
-    image: "/services/ac-service.png",
+    image: "/services/speedfix-ac-service.png",
     rating: 4.7,
     reviews: "3.1k reviews",
     jobsCompleted: "24k AC visits",
@@ -724,7 +724,7 @@ export const serviceCatalog: ServiceCatalogItem[] = [
     tagline: "Diagnosis and repair support for kitchen and daily-use appliances.",
     description:
       "Book professional visits for washing machine, microwave, chimney and other appliance issues with digital inspection summaries.",
-    image: "/services/appliance-repair.png",
+    image: "/services/speedfix-appliance-repair.png",
     rating: 4.7,
     reviews: "1.1k reviews",
     jobsCompleted: "9k appliance repairs",

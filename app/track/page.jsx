@@ -18,6 +18,7 @@ import {
   Truck,
 } from "lucide-react";
 import { formatTrackingTimestamp, getStatusTone } from "@/lib/bookingTracking";
+import { readJsonResponse } from "@/lib/readJsonResponse";
 import { getRideStatusTone, rideStatusLabels } from "@/lib/rideService";
 
 const WorkerTrackingMap = dynamic(
@@ -62,7 +63,7 @@ export default function TrackPage() {
       const response = await fetch(
         `/api/marketplace/bookings/${encodeURIComponent(id)}/timeline`
       );
-      const result = await response.json();
+      const result = await readJsonResponse(response);
 
       if (!response.ok) {
         throw new Error(result.error || "Unable to load this booking.");

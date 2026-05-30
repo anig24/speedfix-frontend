@@ -2,143 +2,76 @@
 
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  CheckCircle2,
-  Clock3,
-  Headset,
-  MapPinned,
-  Radar,
-  ShieldCheck,
-  Truck,
-} from "lucide-react";
-
-const routeSignals = [
-  "Search",
-  "Quote",
-  "Schedule",
-  "Match",
-  "Dispatch",
-  "Track",
-  "QA",
-  "Support",
-];
-
-const liveSteps = [
-  { label: "Booking", icon: CheckCircle2 },
-  { label: "Provider", icon: Radar },
-  { label: "ETA", icon: Truck },
-  { label: "Quality", icon: ShieldCheck },
-  { label: "Support", icon: Headset },
-];
 
 export default function GlobalMotionSystem() {
   const pathname = usePathname();
 
   return (
-    <>
+    <div
+      key={pathname}
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-[11] overflow-hidden opacity-60"
+    >
       <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
-      >
-        <motion.div
-          key={`glow-${pathname}`}
-          className="absolute -right-28 top-20 h-72 w-72 rounded-full bg-orange-400/12 blur-3xl"
-          animate={{ x: [0, -24, 0], y: [0, 18, 0], scale: [1, 1.08, 1] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute -left-24 bottom-28 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl"
-          animate={{ x: [0, 22, 0], y: [0, -20, 0], scale: [1, 1.05, 1] }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <div className="absolute inset-0 global-motion-grid opacity-[0.28]" />
-        <motion.div
-          className="absolute left-0 top-[112px] h-px w-1/3 bg-gradient-to-r from-transparent via-orange-400/50 to-transparent"
-          animate={{ x: ["-40vw", "140vw"] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.div
-          className="absolute bottom-[18%] right-0 h-px w-1/4 bg-gradient-to-r from-transparent via-sky-400/45 to-transparent"
-          animate={{ x: ["35vw", "-140vw"] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-        />
-      </div>
-
-      <motion.div
-        key={pathname}
-        aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-[76px] z-[60] h-1 bg-[#ff6a00]"
-        initial={{ width: "0%" }}
-        animate={{ width: ["0%", "48%", "100%", "0%"] }}
-        transition={{ duration: 1.1, ease: "easeInOut" }}
+        className="absolute inset-0 opacity-[0.32]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(7,17,31,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(7,17,31,0.035) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+        }}
       />
 
       <motion.div
-        aria-label="Live service routing"
-        className="fixed bottom-4 left-1/2 z-40 hidden w-[min(720px,calc(100vw-2rem))] -translate-x-1/2 rounded-full border border-slate-200 bg-white/92 px-3 py-2 shadow-[0_20px_70px_rgba(15,23,42,0.16)] backdrop-blur-xl md:block"
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.4 }}
-      >
-        <div className="flex items-center justify-between gap-2">
-          {liveSteps.map((step, index) => {
-            const Icon = step.icon;
+        className="absolute left-[6%] top-[18%] h-px w-56 bg-gradient-to-r from-transparent via-[#FF6A00]/35 to-transparent"
+        animate={{ x: ["-16vw", "116vw"] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div
+        className="absolute bottom-[22%] right-[4%] h-px w-64 bg-gradient-to-r from-transparent via-[#07111F]/18 to-transparent"
+        animate={{ x: ["22vw", "-118vw"] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+      />
 
-            return (
-              <div
-                key={step.label}
-                className="relative flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-slate-700"
-              >
-                <motion.span
-                  className="absolute inset-0 rounded-full bg-slate-100"
-                  animate={{ opacity: [0.18, index === 1 ? 0.72 : 0.36, 0.18] }}
-                  transition={{
-                    duration: 2.8,
-                    repeat: Infinity,
-                    delay: index * 0.22,
-                    ease: "easeInOut",
-                  }}
-                />
-                <Icon className="relative h-4 w-4 text-orange-500" />
-                <span className="relative">{step.label}</span>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
+      <motion.div
+        className="absolute left-[14%] top-[42%] h-2 w-2 rounded-full bg-[#FF6A00]/55"
+        animate={{ y: [0, -14, 0], opacity: [0.35, 0.8, 0.35] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute right-[18%] top-[30%] h-2 w-2 rounded-full bg-[#07111F]/35"
+        animate={{ y: [0, 12, 0], opacity: [0.28, 0.65, 0.28] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-[18%] left-[38%] h-2 w-2 rounded-full bg-[#FF6A00]/45"
+        animate={{ x: [0, 18, 0], opacity: [0.25, 0.72, 0.25] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
 
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed right-4 top-1/2 z-30 hidden -translate-y-1/2 xl:block"
+      <svg
+        className="absolute inset-x-0 top-[16%] h-[360px] w-full opacity-[0.22]"
+        viewBox="0 0 1440 360"
+        fill="none"
       >
-        <div className="rounded-full border border-white/70 bg-white/70 p-2 shadow-[0_20px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl">
-          <div className="flex flex-col items-center gap-2">
-            {routeSignals.map((signal, index) => (
-              <motion.div
-                key={signal}
-                className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500"
-                animate={{ y: [0, index % 2 ? 3 : -3, 0] }}
-                transition={{
-                  duration: 3 + index * 0.18,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                {index === 2 ? (
-                  <Clock3 className="h-4 w-4" />
-                ) : index === 5 ? (
-                  <MapPinned className="h-4 w-4" />
-                ) : (
-                  <span className="h-2 w-2 rounded-full bg-orange-500" />
-                )}
-                <span className="absolute right-11 hidden whitespace-nowrap rounded-full bg-slate-950 px-3 py-1 text-[11px] font-semibold text-white group-hover:block">
-                  {signal}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
+        <motion.path
+          d="M-40 250 C 160 120, 310 310, 520 170 S 850 74, 1010 190 S 1240 292, 1480 130"
+          stroke="#FF6A00"
+          strokeWidth="2"
+          strokeDasharray="8 18"
+          strokeLinecap="round"
+          animate={{ strokeDashoffset: [0, -120] }}
+          transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.path
+          d="M-80 90 C 180 180, 350 46, 590 116 S 970 260, 1190 116 S 1390 70, 1500 190"
+          stroke="#07111F"
+          strokeWidth="1.5"
+          strokeDasharray="6 22"
+          strokeLinecap="round"
+          animate={{ strokeDashoffset: [0, 110] }}
+          transition={{ duration: 26, repeat: Infinity, ease: "linear" }}
+        />
+      </svg>
+    </div>
   );
 }

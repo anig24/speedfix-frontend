@@ -323,6 +323,7 @@ export default function RidersPage() {
               riderLabel={activeRide?.assignedRider?.name}
               riderVehicleNumber={activeRide?.assignedRider?.vehicleNumber}
               rideCode={activeRide?.rideCode}
+              fallbackLocationLabel={`${activeRide?.city || "Bengaluru"}, India`}
             />
           </div>
         </div>

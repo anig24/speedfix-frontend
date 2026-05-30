@@ -1,16 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bike,
-  Clock3,
-  IndianRupee,
   LoaderCircle,
   LocateFixed,
   MapPin,
   Navigation,
-  ShieldCheck,
+  Search,
+  X,
 } from "lucide-react";
 import {
   estimateRideFare,
@@ -37,6 +36,46 @@ const emptyRideForm = {
   dropAddress: "",
 };
 
+type Coordinates = {
+  latitude: number;
+  longitude: number;
+};
+
+type LocationSuggestion = {
+  id: string;
+  label: string;
+  address: string;
+  coordinates: Coordinates;
+};
+
+type NominatimResult = {
+  place_id?: number;
+  display_name?: string;
+  name?: string;
+  lat?: string;
+  lon?: string;
+};
+
+type GoogleGeocodeResult = {
+  place_id?: string;
+  formatted_address?: string;
+  address_components?: Array<{
+    long_name?: string;
+    types?: string[];
+  }>;
+  geometry?: {
+    location?: {
+      lat?: number;
+      lng?: number;
+    };
+  };
+};
+
+const googleMapsApiKey =
+  process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+  process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ||
+  "";
+
 function formatStatus(value?: string | null) {
   if (!value) {
     return "Searching rider";
@@ -45,15 +84,104 @@ function formatStatus(value?: string | null) {
   return rideStatusLabels[value as keyof typeof rideStatusLabels] || value;
 }
 
+function parseCoordinate(value: string | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function compactAddress(value: string) {
+  const parts = value.split(",").map((part) => part.trim()).filter(Boolean);
+  return parts.slice(0, 4).join(", ");
+}
+
+function googlePlaceLabel(item: GoogleGeocodeResult) {
+  const landmark = item.address_components?.find((component) =>
+    component.types?.some((type) =>
+      ["premise", "point_of_interest", "establishment", "route"].includes(type)
+    )
+  );
+
+  return landmark?.long_name || compactAddress(item.formatted_address || "");
+}
+
+async function searchMapLocations(query: string, city: string) {
+  const searchText = [query, city, "India"].filter(Boolean).join(", ");
+
+  if (googleMapsApiKey) {
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+        searchText
+      )}&region=in&key=${encodeURIComponent(googleMapsApiKey)}`
+    );
+    const payload = (await response.json().catch(() => ({}))) as {
+      results?: GoogleGeocodeResult[];
+    };
+    const googleResults = (payload.results || [])
+      .map((item) => {
+        const latitude = item.geometry?.location?.lat;
+        const longitude = item.geometry?.location?.lng;
+        const address = item.formatted_address || "";
+
+        if (
+          typeof latitude !== "number" ||
+          typeof longitude !== "number" ||
+          !address
+        ) {
+          return null;
+        }
+
+        return {
+          id: item.place_id || `${latitude}-${longitude}`,
+          label: googlePlaceLabel(item),
+          address: compactAddress(address),
+          coordinates: { latitude, longitude },
+        };
+      })
+      .filter((item): item is LocationSuggestion => Boolean(item));
+
+    if (googleResults.length) {
+      return googleResults;
+    }
+  }
+
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=in&q=${encodeURIComponent(searchText)}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+  const data = (await response.json().catch(() => [])) as NominatimResult[];
+
+  return data
+    .map((item) => {
+      const latitude = parseCoordinate(item.lat);
+      const longitude = parseCoordinate(item.lon);
+      const address = item.display_name || "";
+
+      if (latitude === null || longitude === null || !address) {
+        return null;
+      }
+
+      return {
+        id: String(item.place_id || `${latitude}-${longitude}`),
+        label: item.name || compactAddress(address),
+        address: compactAddress(address),
+        coordinates: { latitude, longitude },
+      };
+    })
+    .filter((item): item is LocationSuggestion => Boolean(item));
+}
+
 export default function RidesPage() {
   const [form, setForm] = useState(emptyRideForm);
-  const [pickupCoordinates, setPickupCoordinates] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  const [pickupCoordinates, setPickupCoordinates] = useState<Coordinates | null>(null);
+  const [dropCoordinates, setDropCoordinates] = useState<Coordinates | null>(null);
   const [ride, setRide] = useState<RideDispatchClient | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [detectingLocation, setDetectingLocation] = useState(false);
 
   const loadRide = useCallback(async (rideId: string) => {
     if (!rideId) {
@@ -97,8 +225,8 @@ export default function RidesPage() {
   }, [loadRide]);
 
   const previewFare = useMemo(() => {
-    return estimateRideFare(pickupCoordinates, null);
-  }, [pickupCoordinates]);
+    return estimateRideFare(pickupCoordinates, dropCoordinates);
+  }, [dropCoordinates, pickupCoordinates]);
 
   useEffect(() => {
     if (!ride?.rideId) {
@@ -126,15 +254,28 @@ export default function RidesPage() {
     }
 
     setMessage("");
+    setDetectingLocation(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setPickupCoordinates({
+        const coordinates = {
           latitude: Number(position.coords.latitude.toFixed(6)),
           longitude: Number(position.coords.longitude.toFixed(6)),
-        });
-        setMessage("Pickup location captured.");
+        };
+        setPickupCoordinates(coordinates);
+        setForm((current) => ({
+          ...current,
+          pickupLabel: "Current location",
+          pickupAddress:
+            current.pickupAddress ||
+            `Current location (${coordinates.latitude}, ${coordinates.longitude})`,
+        }));
+        setMessage("Pickup location auto-detected.");
+        setDetectingLocation(false);
       },
-      () => setMessage("Location permission was not granted."),
+      () => {
+        setMessage("Location permission was not granted.");
+        setDetectingLocation(false);
+      },
       {
         enableHighAccuracy: true,
         timeout: 12000,
@@ -166,6 +307,7 @@ export default function RidesPage() {
             label: form.dropLabel,
             address: form.dropAddress,
             city: form.city,
+            coordinates: dropCoordinates,
           },
         }),
       });
@@ -186,42 +328,24 @@ export default function RidesPage() {
   }
 
   return (
-    <div className="public-shell min-h-screen text-slate-900">
-      <section className="border-b border-slate-200/80">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+    <div className="min-h-screen bg-[#f6f8fb] text-slate-900">
+      <section className="border-b border-slate-200/80 bg-white">
+        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 lg:grid-cols-[0.78fr_1.22fr] lg:px-8">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-[#fff2df] px-4 py-2 text-sm font-semibold text-orange-800">
+            <div className="inline-flex items-center gap-2 rounded-lg border border-orange-100 bg-orange-50 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-orange-700">
               <Bike className="h-4 w-4" />
-              SpeedFix Bike
+              SpeedFix Mobility
             </div>
-            <h1 className="mt-5 display-font text-5xl leading-tight text-slate-950 md:text-6xl">
-              Bike rides for customers and field teams
+            <h1 className="mt-5 text-5xl font-extrabold leading-tight tracking-tight text-slate-950 md:text-6xl">
+              Premium bike pickup, mapped in real time.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600">
-              Per-kilometer pricing, peak-hour surge, OTP pickup, live rider
-              tracking, and waiting charges after the first 3 minutes.
+              Search pickup and drop points, use your current location, and
+              watch the ride route on a clear street map.
             </p>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <FareTile
-                icon={<IndianRupee className="h-5 w-5" />}
-                label="Rate"
-                value={`Rs. ${rideFarePolicy.perKmRate}/km`}
-              />
-              <FareTile
-                icon={<Clock3 className="h-5 w-5" />}
-                label="Peak"
-                value={`${rideFarePolicy.peakMultiplier}x`}
-              />
-              <FareTile
-                icon={<ShieldCheck className="h-5 w-5" />}
-                label="OTP"
-                value="Required"
-              />
-            </div>
           </div>
 
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field
                 label="Name"
@@ -243,18 +367,44 @@ export default function RidesPage() {
                 onChange={(value) => updateForm("city", value)}
                 placeholder="Kolkata"
               />
-              <Field
-                label="Pickup"
-                value={form.pickupAddress}
-                onChange={(value) => updateForm("pickupAddress", value)}
-                placeholder="Flat, street, pickup point"
-              />
-              <Field
-                label="Drop"
-                value={form.dropAddress}
-                onChange={(value) => updateForm("dropAddress", value)}
-                placeholder="Drop address"
-              />
+              <div className="sm:col-span-2">
+                <LocationSearchField
+                  label="Pickup location"
+                  value={form.pickupAddress}
+                  placeholder="Search pickup address or landmark"
+                  onChange={(value) => updateForm("pickupAddress", value)}
+                  onSelect={(suggestion) => {
+                    updateForm("pickupAddress", suggestion.address);
+                    updateForm("pickupLabel", suggestion.label);
+                    setPickupCoordinates(suggestion.coordinates);
+                  }}
+                  onPreview={(suggestion) => {
+                    updateForm("pickupLabel", suggestion.label);
+                    setPickupCoordinates(suggestion.coordinates);
+                  }}
+                  city={form.city}
+                  tone="pickup"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <LocationSearchField
+                  label="Drop location"
+                  value={form.dropAddress}
+                  placeholder="Search drop address or landmark"
+                  onChange={(value) => updateForm("dropAddress", value)}
+                  onSelect={(suggestion) => {
+                    updateForm("dropAddress", suggestion.address);
+                    updateForm("dropLabel", suggestion.label);
+                    setDropCoordinates(suggestion.coordinates);
+                  }}
+                  onPreview={(suggestion) => {
+                    updateForm("dropLabel", suggestion.label);
+                    setDropCoordinates(suggestion.coordinates);
+                  }}
+                  city={form.city}
+                  tone="drop"
+                />
+              </div>
               <Field
                 label="Drop label"
                 value={form.dropLabel}
@@ -270,11 +420,12 @@ export default function RidesPage() {
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-400"
               >
                 <LocateFixed className="h-4 w-4" />
-                Capture pickup
+                {detectingLocation ? "Detecting..." : "Use current location"}
               </button>
               <div className="rounded-[1.2rem] bg-slate-50 px-4 py-3 text-sm text-slate-600">
                 Estimate: Rs. {previewFare.estimatedFare} | Rs.{" "}
                 {previewFare.perKmRate}/km
+                {previewFare.distanceKm ? ` | ${previewFare.distanceKm} km` : ""}
                 {previewFare.peakHour ? ` | Peak +Rs. ${previewFare.surgeAmount}` : ""}
               </div>
             </div>
@@ -345,7 +496,7 @@ export default function RidesPage() {
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2">
             <div>
               <p className="text-sm font-semibold text-slate-950">Live tracking</p>
@@ -361,7 +512,9 @@ export default function RidesPage() {
 
           <WorkerTrackingMap
             pickupCoordinates={ride?.pickup.coordinates || pickupCoordinates}
-            dropCoordinates={ride?.drop.coordinates || null}
+            dropCoordinates={ride?.drop.coordinates || dropCoordinates}
+            pickupAddress={ride?.pickup.address || form.pickupAddress}
+            dropAddress={ride?.drop.address || form.dropAddress}
             riderCoordinates={
               ride?.riderLiveLocation?.coordinates ||
               ride?.assignedRider?.liveCoordinates ||
@@ -370,6 +523,17 @@ export default function RidesPage() {
             riderLabel={ride?.assignedRider?.name}
             riderVehicleNumber={ride?.assignedRider?.vehicleNumber}
             rideCode={ride?.rideCode}
+            fallbackLocationLabel={`${ride?.city || form.city || "Bengaluru"}, India`}
+            onAutoDetect={(coordinates) => {
+              setPickupCoordinates(coordinates);
+              setForm((current) => ({
+                ...current,
+                pickupLabel: "Current location",
+                pickupAddress:
+                  current.pickupAddress ||
+                  `Current location (${coordinates.latitude}, ${coordinates.longitude})`,
+              }));
+            }}
           />
         </div>
       </section>
@@ -401,22 +565,139 @@ function Field({
   );
 }
 
-function FareTile({
-  icon,
+function LocationSearchField({
   label,
   value,
+  placeholder,
+  onChange,
+  onSelect,
+  onPreview,
+  city,
+  tone,
 }: {
-  icon: React.ReactNode;
   label: string;
   value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+  onSelect: (suggestion: LocationSuggestion) => void;
+  onPreview?: (suggestion: LocationSuggestion) => void;
+  city: string;
+  tone: "pickup" | "drop";
 }) {
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [open, setOpen] = useState(false);
+  const onPreviewRef = useRef(onPreview);
+
+  useEffect(() => {
+    onPreviewRef.current = onPreview;
+  }, [onPreview]);
+
+  useEffect(() => {
+    const query = value.trim();
+
+    if (query.length < 3) {
+      setSuggestions([]);
+      setSearching(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timeout = window.setTimeout(async () => {
+      setSearching(true);
+
+      try {
+        const nextSuggestions = await searchMapLocations(query, city);
+
+        if (cancelled) return;
+
+        setSuggestions(nextSuggestions);
+        if (nextSuggestions[0]) {
+          onPreviewRef.current?.(nextSuggestions[0]);
+        }
+        setOpen(true);
+      } catch {
+        if (!cancelled) {
+          setSuggestions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setSearching(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [city, value]);
+
   return (
-    <div className="rounded-[1.4rem] border border-slate-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-      <div className="flex items-center gap-2 text-orange-600">{icon}</div>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-        {label}
-      </p>
-      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
+    <div className="relative">
+      <label className="block">
+        <span className="text-sm font-semibold text-slate-900">{label}</span>
+        <div className="relative mt-2">
+          <span
+            className={`absolute left-4 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full ${
+              tone === "pickup" ? "bg-sky-500" : "bg-emerald-500"
+            }`}
+          />
+          <Search className="absolute left-9 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            value={value}
+            onChange={(event) => {
+              onChange(event.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            placeholder={placeholder}
+            className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-16 pr-11 text-sm font-semibold text-slate-900 outline-none transition focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
+          />
+          {value && (
+            <button
+              type="button"
+              onClick={() => {
+                onChange("");
+                setSuggestions([]);
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              aria-label={`Clear ${label}`}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </label>
+
+      {open && (searching || suggestions.length > 0) && (
+        <div className="absolute left-0 right-0 top-full z-[500] mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+          {searching && (
+            <div className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-slate-500">
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+              Searching map...
+            </div>
+          )}
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion.id}
+              type="button"
+              onClick={() => {
+                onSelect(suggestion);
+                setOpen(false);
+              }}
+              className="block w-full border-t border-slate-100 px-4 py-3 text-left transition first:border-t-0 hover:bg-slate-50"
+            >
+              <p className="text-sm font-extrabold text-slate-950">
+                {suggestion.label}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                {suggestion.address}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

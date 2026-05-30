@@ -104,6 +104,16 @@ export function hasCompanyEmail(email: unknown) {
   return normalizeEmail(email).endsWith("@speedfix.co.in");
 }
 
+function hasFounderIdentity(email: unknown) {
+  const normalizedEmail = normalizeEmail(email);
+  const localPart = normalizedEmail.split("@")[0] || "";
+
+  return (
+    normalizedEmail === "founder@speedfix.co.in" ||
+    (normalizedEmail.endsWith("@speedfix.co.in") && localPart.includes("founder"))
+  );
+}
+
 export function formatRoleLabel(role: unknown) {
   const normalized = normalizeRole(role);
 
@@ -207,6 +217,10 @@ export function canAccessWorkspace(
     return false;
   }
 
+  if (hasFounderIdentity(email)) {
+    return true;
+  }
+
   if (FOUNDER_ROLES.has(role)) {
     return true;
   }
@@ -268,6 +282,10 @@ export function getCorporateHomeHref(
   const user = record as PortalUserRecord;
   const role = normalizeRole(user.role);
   const email = emailOverride ?? user.email;
+
+  if (hasFounderIdentity(email)) {
+    return "/corporate/command-center/daily-brief";
+  }
 
   if (role === ROLES.FOUNDER || role === ROLES.BUSINESS_HEAD) {
     return "/corporate/command-center/daily-brief";

@@ -7,6 +7,7 @@ import { ArrowRight, CheckCircle2, LoaderCircle, MessageCircle } from "lucide-re
 import LiveOperationsAnimation from "@/app/components/enterprise/LiveOperationsAnimation";
 import EnterpriseWorkflowManagementDashboard from "@/app/components/enterprise/EnterpriseWorkflowManagementDashboard";
 import { auth } from "@/lib/firebase";
+import { readJsonResponse } from "@/lib/readJsonResponse";
 import { type EnterpriseTimelineItem } from "@/lib/enterpriseManagement";
 
 type CustomerDashboardResponse = {
@@ -47,9 +48,14 @@ export default function EnterpriseCustomerDashboard() {
       const response = await fetch("/api/enterprise/customer-dashboard", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      const data = (await response.json()) as {
+      const data = await readJsonResponse<{
+        error?: string;
         dashboard?: CustomerDashboardResponse;
-      };
+      }>(response);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to load customer dashboard.");
+      }
 
       if (active) {
         setDashboard(data.dashboard || null);
@@ -59,6 +65,7 @@ export default function EnterpriseCustomerDashboard() {
 
     loadDashboard().catch(() => {
       if (active) {
+        setDashboard(null);
         setLoading(false);
       }
     });

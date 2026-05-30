@@ -1,181 +1,191 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ChevronRight, MapPin, Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import { useDeferredValue, useMemo, useState } from "react";
-import ServiceCatalogDirectory from "@/app/components/services/ServiceCatalogDirectory";
-import { operatingCities, serviceCatalog } from "@/lib/serviceCatalog";
+import { serviceCatalog } from "@/lib/serviceCatalog";
 
-const reveal = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
-  transition: { duration: 0.45, ease: "easeOut" as const },
+type ServiceGridItem = {
+  title: string;
+  href: string;
+  image: string;
 };
+
+const illustrationBySlug: Record<string, string> = {
+  cleaning: "/services/cleaning.png",
+  electrician: "/services/electrician.png",
+  plumbing: "/services/plumbing.png",
+  "ac-service": "/services/ac-service.png",
+  "appliance-repair": "/services/appliance-repair.png",
+  "fan-installation": "/services/fan-installation.png",
+  "water-purifier": "/services/plumbing.png",
+  "packers-movers": "/services/appliance-repair.png",
+  "laundry-dry-cleaning": "/services/appliance-repair.png",
+  "appliance-installation": "/services/appliance-repair.png",
+};
+
+const featuredServices: ServiceGridItem[] = [
+  {
+    title: "Home Cleaning",
+    href: "/services/cleaning",
+    image: "/services/cleaning.png",
+  },
+  {
+    title: "Bathroom Cleaning",
+    href: "/services/cleaning/bathroom-deep-cleaning",
+    image: "/services/cleaning.png",
+  },
+  {
+    title: "Laundry",
+    href: "/services/laundry-dry-cleaning",
+    image: "/services/appliance-repair.png",
+  },
+  {
+    title: "Fan Cleaning",
+    href: "/services/fan-installation",
+    image: "/services/fan-installation.png",
+  },
+  {
+    title: "Kitchen Cleaning",
+    href: "/services/cleaning/kitchen-deep-cleaning",
+    image: "/services/cleaning.png",
+  },
+  {
+    title: "Packing & Unpacking",
+    href: "/services/packers-movers",
+    image: "/services/appliance-repair.png",
+  },
+  {
+    title: "All Services",
+    href: "/services",
+    image: "/services/ac-service.png",
+  },
+];
+
+const catalogServices: ServiceGridItem[] = serviceCatalog
+  .filter(
+    (service) =>
+      !new Set([
+        "cleaning",
+        "fan-installation",
+        "packers-movers",
+        "laundry-dry-cleaning",
+      ]).has(service.slug)
+  )
+  .map((service) => ({
+    title: service.name,
+    href: `/services/${service.slug}`,
+    image:
+      illustrationBySlug[service.slug] ||
+      (service.slug.includes("plumbing") || service.slug.includes("purifier")
+        ? "/services/plumbing.png"
+        : service.slug.includes("electric") ||
+            service.slug.includes("cctv") ||
+            service.slug.includes("smart") ||
+            service.slug.includes("inverter")
+          ? "/services/electrician.png"
+          : service.slug.includes("ac") || service.slug.includes("appliance")
+            ? "/services/ac-service.png"
+            : "/services/cleaning.png"),
+  }));
+
+const serviceGrid = [...featuredServices, ...catalogServices];
 
 export default function ServicesPage() {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
-  const totalCategories = serviceCatalog.length;
-  const totalSubcategories = useMemo(
-    () => serviceCatalog.reduce((sum, service) => sum + service.subcategories.length, 0),
-    []
-  );
 
-  const filteredServices = useMemo(() => {
+  const visibleServices = useMemo(() => {
     if (!deferredQuery) {
-      return serviceCatalog;
+      return serviceGrid;
     }
 
-    return serviceCatalog.filter((service) => {
-      const haystack = [
-        service.name,
-        service.tagline,
-        service.description,
-        service.offer,
-        ...service.searchTerms,
-        ...service.subcategories.flatMap((subcategory) => [
-          subcategory.name,
-          subcategory.tagline,
-          subcategory.description,
-        ]),
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(deferredQuery);
-    });
+    return serviceGrid.filter((service) =>
+      service.title.toLowerCase().includes(deferredQuery)
+    );
   }, [deferredQuery]);
 
   return (
-    <div className="public-shell overflow-x-hidden text-slate-900">
-      <section className="relative overflow-hidden border-b border-slate-200/80">
-        <div className="hero-grid absolute inset-0 opacity-70" />
-        <div className="public-hero-glow absolute inset-x-0 top-0 h-[26rem]" />
-
-        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
-          <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr] xl:items-start">
-            <motion.div {...reveal} className="max-w-4xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Services
-              </p>
-
-              <h1 className="mt-4 display-font text-5xl leading-tight text-slate-950 md:text-6xl">
-                Service Directory
+    <main className="bg-white text-[#07111F]">
+      <section className="border-b border-[#EAEAEA] bg-white">
+        <div className="mx-auto max-w-6xl px-5 py-10 lg:px-8">
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-[#FF6A00]">
+            SpeedFix services
+          </p>
+          <div className="mt-3 grid gap-5 lg:grid-cols-[1fr_360px] lg:items-end">
+            <div>
+              <h1 className="text-4xl font-black leading-tight md:text-5xl">
+                Choose the work you need.
               </h1>
-
-              <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
-                Browse services by category, review the available subcategories,
-                and move directly into the required task page.
+              <p className="mt-3 max-w-2xl text-base font-semibold leading-7 text-slate-600">
+                Clean service cards for booking home help, repairs,
+                maintenance, pickup, and installations.
               </p>
-            </motion.div>
-
-            <motion.div
-              {...reveal}
-              className="surface-panel rounded-[2.2rem] border border-slate-200 p-6"
-            >
-              <div className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Search
-                  </p>
-                  <div className="relative mt-4">
-                    <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <input
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Search AC, plumbing, cleaning, appliance..."
-                      className="w-full rounded-full border border-slate-200 bg-slate-50 px-11 py-4 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                  {[
-                    [`${totalCategories}`, "categories"],
-                    [`${totalSubcategories}+`, "subcategories"],
-                    [`${filteredServices.length}`, "visible results"],
-                  ].map(([value, label]) => (
-                    <div
-                      key={label}
-                      className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4"
-                    >
-                      <p className="text-2xl font-semibold text-slate-950">{value}</p>
-                      <p className="mt-1 text-sm text-slate-500">{label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-6 rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-orange-500" />
-                  <p className="text-sm font-semibold text-slate-950">Service cities</p>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {operatingCities.map((city) => (
-                    <span
-                      key={city}
-                      className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700"
-                    >
-                      {city}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+            </div>
+            <label className="relative block">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search services"
+                className="h-12 w-full rounded-full border border-[#EAEAEA] bg-[#F7F7F7] pl-11 pr-4 text-sm font-bold outline-none transition focus:border-[#FF6A00] focus:bg-white"
+              />
+            </label>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-              Categories and tasks
-            </p>
-            <h2 className="mt-3 display-font text-4xl text-slate-950">
-              Service categories with direct subcategory access
-            </h2>
-          </div>
-          <p className="max-w-2xl text-sm leading-7 text-slate-600">
-            Open the category page for detail or use the plus actions to start
-            building a booking directly from the directory.
-          </p>
+      <section className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
+        <div
+          id="all-services"
+          className="grid justify-center gap-4 sm:justify-start"
+          style={{
+            gridTemplateColumns: "repeat(auto-fit, 180px)",
+          }}
+        >
+          {visibleServices.map((service) => (
+            <ServiceCard key={`${service.title}-${service.href}`} service={service} />
+          ))}
         </div>
 
-        <div className="mt-10">
-          <ServiceCatalogDirectory
-            services={filteredServices}
-            subcategoriesPerCard={5}
-            variant="catalog"
-          />
-        </div>
-
-        {!filteredServices.length && (
-          <div className="surface-panel mt-10 rounded-[2rem] border border-slate-200 p-8 text-center">
-            <h3 className="text-2xl font-semibold text-slate-950">
-              No matching service found
-            </h3>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
-              Try another keyword like plumbing, purifier, wardrobe, or CCTV.
+        {!visibleServices.length && (
+          <div className="mt-8 rounded-[24px] border border-[#EAEAEA] bg-[#F7F7F7] p-8 text-center">
+            <h2 className="text-2xl font-black">No service found</h2>
+            <p className="mt-2 text-sm font-semibold text-slate-600">
+              Try searching cleaning, fan, laundry, AC, or plumbing.
             </p>
           </div>
         )}
       </section>
+    </main>
+  );
+}
 
-      <section className="border-t border-slate-200/80 bg-white/60">
-        <div className="mx-auto flex max-w-7xl justify-center px-6 py-10 lg:px-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
-          >
-            Back to homepage
-            <ChevronRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-    </div>
+function ServiceCard({ service }: { service: ServiceGridItem }) {
+  return (
+    <Link
+      href={service.href}
+      className="group relative h-[180px] w-[180px] overflow-hidden rounded-[24px] border border-[#EAEAEA] bg-[#F7F7F7] p-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(7,17,31,0.10)]"
+    >
+      <div className="flex h-[112px] items-center justify-center rounded-[18px] bg-white/45">
+        <Image
+          src={service.image}
+          alt={service.title}
+          width={112}
+          height={112}
+          className="h-[104px] w-[104px] object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+      </div>
+
+      <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
+        <h2 className="max-w-[118px] text-[15px] font-black leading-tight text-[#07111F]">
+          {service.title}
+        </h2>
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[#07111F] shadow-sm transition duration-300 group-hover:bg-[#07111F] group-hover:text-white">
+          <ArrowRight className="h-4 w-4" />
+        </span>
+      </div>
+    </Link>
   );
 }

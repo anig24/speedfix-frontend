@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { collection, onSnapshot, orderBy, query, serverTimestamp, setDoc, doc } from "firebase/firestore";
 import { getApps, initializeApp } from "firebase/app";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
-import { AlertCircle, CheckCircle2, ShieldCheck, Pencil, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, ShieldCheck, Pencil } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { hasCompanyEmail } from "@/lib/portalAccess";
 
@@ -19,6 +19,74 @@ type EmployeePreview = {
   designation: string; companyRole: string; cluster: string; salary: number; status: string; departmentId: string; city: string;
 };
 
+type EmployeeDocument = Partial<Omit<EmployeePreview, "id" | "salary">> & {
+  name?: unknown;
+  fullName?: unknown;
+  email?: unknown;
+  role?: unknown;
+  phone?: unknown;
+  employeeCode?: unknown;
+  employeeId?: unknown;
+  designation?: unknown;
+  companyRole?: unknown;
+  cluster?: unknown;
+  salary?: unknown;
+  status?: unknown;
+  departmentId?: unknown;
+  city?: unknown;
+};
+
+type EmployeePermissions = {
+  employees: { view: boolean; update: boolean; manage: boolean; delete: boolean };
+  finance: { view: boolean; update: boolean; manage: boolean };
+  jobs: { read: boolean; update: boolean; assign: boolean };
+  system: {
+    fullAccess: boolean;
+    write: boolean;
+    settings: boolean;
+    manageApplications: boolean;
+    manageDepartments: boolean;
+    manageJobs: boolean;
+    managePayroll: boolean;
+    systemSettings: boolean;
+    viewReports: boolean;
+  };
+};
+
+type EmployeePayload = {
+  fullName: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  designation: string;
+  companyRole: string;
+  departmentId: string;
+  salary: number;
+  status: string;
+  cluster: string;
+  employeeId: string;
+  companyId: string;
+  accountType: string;
+  permissions: EmployeePermissions;
+  updatedAt: unknown;
+  createdAt?: unknown;
+  isSuperAdmin: boolean;
+  active: boolean;
+  isActive: boolean;
+  employeeActive: boolean;
+  employmentActive: boolean;
+  employmentStatus: string;
+  portalType: string;
+};
+
+type InputProps = {
+  label: string;
+  value: string | number;
+  onChange: (value: string) => void;
+  type?: string;
+};
+
 const defaultForm: EmployeeForm = {
   name: "", email: "", temporaryPassword: "", phone: "", role: "FIELD_RECRUITER", 
   departmentId: "sf-ops-01", city: "Bangalore", employeeCode: "", designation: "", 
@@ -26,11 +94,134 @@ const defaultForm: EmployeeForm = {
 };
 
 const employeeRoleGroups = [
-  { label: "Leadership", roles: ["FOUNDER", "CHIEF_TECHNOLOGY_OFFICER", "DEPUTY_CHIEF_TECHNOLOGY_OFFICER", "CHIEF_OPERATING_OFFICER", "CHIEF_FINANCIAL_OFFICER"] },
-  { label: "HR and Hiring", roles: ["HEAD_HR", "HR", "RECRUITER", "TALENT_ACQUISITION"] },
-  { label: "Operations", roles: ["STATE_MANAGER", "CITY_MANAGER", "OPERATIONS_MANAGER", "DISPATCHER", "FIELD_SUPERVISOR"] },
-  { label: "Finance", roles: ["FINANCE_HEAD", "ACCOUNTS", "ACCOUNTANT", "PAYOUTS"] },
+  {
+    label: "Founder and Leadership",
+    roles: [
+      "FOUNDER",
+      "BUSINESS_HEAD",
+      "CHIEF_EXECUTIVE_OFFICER",
+      "CHIEF_TECHNOLOGY_OFFICER",
+      "DEPUTY_CHIEF_TECHNOLOGY_OFFICER",
+      "CHIEF_OPERATING_OFFICER",
+      "CHIEF_FINANCIAL_OFFICER",
+    ],
+  },
+  {
+    label: "HR and Hiring",
+    roles: [
+      "HEAD_HR",
+      "HR",
+      "JR_HR",
+      "HR_INTERN",
+      "HEAD_RECRUITER",
+      "RECRUITER",
+      "FIELD_RECRUITER",
+      "TALENT_ACQUISITION",
+      "CAMPUS_RECRUITER",
+    ],
+  },
+  {
+    label: "Operations and Field",
+    roles: [
+      "STATE_MANAGER",
+      "CITY_MANAGER",
+      "ZONE_MANAGER",
+      "CLUSTER_MANAGER",
+      "OPERATIONS",
+      "OPERATIONS_ADMIN",
+      "OPERATIONS_MANAGER",
+      "SERVICE_HEAD",
+      "DISPATCHER",
+      "SCHEDULING_COORDINATOR",
+      "FIELD_SUPERVISOR",
+      "FIELD_EXECUTIVE",
+      "TECHNICIAN",
+      "STAFF",
+    ],
+  },
+  {
+    label: "Support and Agent",
+    roles: [
+      "SUPPORT",
+      "SUPPORT_LEAD",
+      "TEAM_LEAD",
+      "SENIOR_AGENT",
+      "AGENT",
+      "CALL_AGENT",
+      "CUSTOMER_SUCCESS",
+    ],
+  },
+  {
+    label: "Finance and Accounts",
+    roles: [
+      "FINANCE_HEAD",
+      "ACCOUNTS_HEAD",
+      "ACCOUNTS",
+      "ACCOUNTANT",
+      "FINANCE",
+      "BILLING",
+      "REFUND_OPS",
+      "PAYOUTS",
+      "COLLECTIONS",
+    ],
+  },
+  {
+    label: "Quality, Audit and Compliance",
+    roles: [
+      "QUALITY_HEAD",
+      "QUALITY",
+      "QUALITY_AUDIT",
+      "QA",
+      "AUDIT",
+      "AUDITOR",
+      "COMPLIANCE",
+      "TRAINING_MANAGER",
+    ],
+  },
+  {
+    label: "Catalog, Admin and Growth",
+    roles: [
+      "ADMIN",
+      "SUPER_ADMIN",
+      "CATALOG",
+      "CATEGORY_MANAGER",
+      "PRICING",
+      "PRICING_MANAGER",
+      "GROWTH_MANAGER",
+    ],
+  },
 ];
+
+function readString(value: unknown, fallback = "") {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function readNumber(value: unknown, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+  return fallback;
+}
+
+function mapEmployeePreview(id: string, data: EmployeeDocument): EmployeePreview {
+  return {
+    id,
+    name: readString(data.name, readString(data.fullName, "Unnamed")),
+    email: readString(data.email),
+    role: readString(data.role, "EMPLOYEE"),
+    phone: readString(data.phone),
+    employeeCode: readString(data.employeeCode, readString(data.employeeId)),
+    designation: readString(data.designation),
+    companyRole: readString(data.companyRole),
+    cluster: readString(data.cluster, "Executive"),
+    salary: readNumber(data.salary),
+    status: readString(data.status, "active"),
+    departmentId: readString(data.departmentId, "sf-ops-01"),
+    city: readString(data.city, "Bangalore"),
+  };
+}
 
 export default function EmployeeAccessManager() {
   const [form, setForm] = useState<EmployeeForm>(defaultForm);
@@ -42,8 +233,10 @@ export default function EmployeeAccessManager() {
   useEffect(() => {
     const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const nextEmployees = snapshot.docs.map(item => ({ id: item.id, ...item.data() } as any))
-        .filter(i => hasCompanyEmail(i.email)).slice(0, 3);
+      const nextEmployees = snapshot.docs
+        .map((item) => mapEmployeePreview(item.id, item.data() as EmployeeDocument))
+        .filter((item) => hasCompanyEmail(item.email))
+        .slice(0, 3);
       setEmployees(nextEmployees);
     });
     return () => unsubscribe();
@@ -87,7 +280,7 @@ export default function EmployeeAccessManager() {
       }
       
       // 2. Inject MNC Permissions Automatically
-      const permissions = {
+      const permissions: EmployeePermissions = {
         employees: { view: true, update: true, manage: true, delete: true },
         finance: { view: true, update: true, manage: true },
         jobs: { read: true, update: true, assign: true },
@@ -98,7 +291,7 @@ export default function EmployeeAccessManager() {
       const userRef = doc(db, "users", uid!);
       const isUserActive = form.status === "active";
       
-      const payload: any = {
+      const payload: EmployeePayload = {
         // MNC Custom Fields
         fullName: form.name,
         name: form.name, 
@@ -137,8 +330,11 @@ export default function EmployeeAccessManager() {
       setStatus({ type: "success", message: `Identity ${editingId ? "updated" : "provisioned"} successfully.` });
       setEditingId(null);
       setForm(defaultForm);
-    } catch (err: any) {
-      setStatus({ type: "error", message: err.message });
+    } catch (err: unknown) {
+      setStatus({
+        type: "error",
+        message: err instanceof Error ? err.message : "Unable to save employee identity.",
+      });
     }
   };
 
@@ -242,7 +438,7 @@ export default function EmployeeAccessManager() {
 }
 
 // Clean Form Input Helper
-function Input({ label, value, onChange, type = "text" }: any) {
+function Input({ label, value, onChange, type = "text" }: InputProps) {
   return (
     <div className="space-y-1">
       <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</label>

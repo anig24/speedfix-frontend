@@ -2,7 +2,9 @@ import "server-only";
 
 import {
   collection,
+  doc,
   getDocs,
+  getDoc,
   limit,
   orderBy,
   query,
@@ -185,16 +187,22 @@ export async function getAuthenticatedPortalUser(headers: Headers) {
     return null;
   }
 
-  const userSnapshot = await getDocs(
-    query(collection(serverDb, "users"), where("email", "==", email), limit(1))
-  ).catch(() => null);
+  const userByUid = await getDoc(doc(serverDb, "users", uid)).catch(() => null);
+  const userSnapshot =
+    userByUid?.exists()
+      ? null
+      : await getDocs(
+          query(collection(serverDb, "users"), where("email", "==", email), limit(1))
+        ).catch(() => null);
   const userByEmail = userSnapshot?.docs[0];
 
   return {
     uid,
     email,
     displayName: normalizeText(account?.displayName),
-    record: userByEmail
+    record: userByUid?.exists()
+      ? serializeRecord(userByUid.id, userByUid.data() as Record<string, unknown>)
+      : userByEmail
       ? serializeRecord(userByEmail.id, userByEmail.data() as Record<string, unknown>)
       : {
           id: uid,

@@ -18,6 +18,7 @@ import {
   LogOut,
   MapPin,
   Menu,
+  Settings2,
   ShoppingBag,
   Wrench,
   X,
@@ -97,6 +98,11 @@ const customerLinks = [
     href: "/careers",
     label: "Careers",
     icon: <BriefcaseBusiness className="h-4 w-4" />,
+  },
+  {
+    href: "/customer/settings",
+    label: "Settings",
+    icon: <Settings2 className="h-4 w-4" />,
   },
 ];
 
@@ -277,6 +283,18 @@ export default function Navbar() {
     return user?.email?.charAt(0).toUpperCase() || "S";
   }, [user]);
 
+  const accountLabel = useMemo(() => {
+    if (workspaceLinks.some((item) => item.key === "founder")) {
+      return "Founder account";
+    }
+
+    if (workspaceLinks.some((item) => item.key !== "customer")) {
+      return "Company account";
+    }
+
+    return hasPremiumBadge ? "Premium member account" : "Customer account";
+  }, [hasPremiumBadge, workspaceLinks]);
+
   const handleLogout = async () => {
     await clearWorkspaceSessionCookies();
     await signOut(auth);
@@ -290,12 +308,12 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/8 bg-[#07111f] shadow-[0_14px_40px_rgba(2,10,24,0.28)]">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/8 bg-[#07111F] shadow-[0_14px_40px_rgba(2,10,24,0.28)]">
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          className="mx-auto grid h-[76px] max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 sm:px-6 lg:gap-8 lg:px-8"
+          className="mx-auto grid h-[69px] max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 sm:px-6 lg:gap-8 lg:px-8"
         >
           <Link href="/" className="flex min-w-max items-center gap-2 text-white">
             <span className="text-2xl font-semibold tracking-tight text-glow">
@@ -358,7 +376,7 @@ export default function Navbar() {
                 >
                   <Bell className="h-4 w-4 text-white" />
                   {notifications.length > 0 && (
-                    <span className="absolute -right-1 -top-1 inline-flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                    <span className="absolute -right-1 -top-1 inline-flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#FF6A00] px-1 text-[10px] font-bold text-white">
                       {notifications.length}
                     </span>
                   )}
@@ -370,24 +388,24 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
-                      className="absolute right-0 mt-3 w-80 overflow-hidden rounded-[1.4rem] border border-white/10 bg-[#0b1527]/98 shadow-[0_24px_80px_rgba(2,10,24,0.48)] backdrop-blur-xl"
+                      className="absolute right-0 mt-3 w-80 overflow-hidden rounded-[1.4rem] border border-slate-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]"
                     >
-                      <div className="border-b border-white/10 px-4 py-3">
-                        <p className="text-sm font-semibold text-white">
+                      <div className="border-b border-slate-100 px-4 py-3">
+                        <p className="text-sm font-bold text-slate-950">
                           Notifications
                         </p>
                       </div>
 
                       <div className="max-h-80 overflow-y-auto">
                         {notifications.length === 0 ? (
-                          <p className="px-4 py-4 text-sm text-white/60">
+                          <p className="px-4 py-4 text-sm text-slate-500">
                             No notifications right now.
                           </p>
                         ) : (
                           notifications.map((notification) => (
                             <div
                               key={notification.id}
-                              className="border-b border-white/6 px-4 py-3 text-sm text-white/72"
+                              className="border-b border-slate-100 px-4 py-3 text-sm text-slate-600"
                             >
                               {notification.message}
                             </div>
@@ -408,7 +426,7 @@ export default function Navbar() {
                     setMenuOpen((open) => !open);
                     setNotifOpen(false);
                   }}
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white shadow-[0_10px_28px_rgba(255,106,0,0.4)]"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FF6A00] text-sm font-bold text-white shadow-[0_10px_28px_rgba(255,106,0,0.4)]"
                   aria-label="Open user menu"
                 >
                   {userInitial}
@@ -420,20 +438,20 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
-                      className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#0b1527]/98 shadow-[0_24px_80px_rgba(2,10,24,0.48)] backdrop-blur-xl"
+                      className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[1.6rem] border border-slate-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]"
                     >
-                      <div className="border-b border-white/10 px-4 py-4">
-                        <p className="text-sm font-semibold text-white">
+                      <div className="border-b border-slate-100 px-4 py-4">
+                        <p className="text-sm font-bold text-slate-950">
                           {user.email}
                         </p>
-                        <p className="mt-1 text-xs text-white/60">
-                          {hasPremiumBadge ? "Premium member account" : "Customer account"}
+                        <p className="mt-1 text-xs text-slate-500">
+                          {accountLabel}
                         </p>
                       </div>
 
                       {workspaceLinks.length > 0 && (
-                        <div className="border-b border-white/10 px-2 py-2">
-                          <p className="px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">
+                        <div className="border-b border-slate-100 px-2 py-2">
+                          <p className="px-2 pb-2 pt-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
                             Dashboards
                           </p>
                           {workspaceLinks.map((item) => (
@@ -442,6 +460,7 @@ export default function Navbar() {
                               href={item.href}
                               icon={<item.icon className="h-4 w-4" />}
                               label={item.label}
+                              surface="light"
                               onClick={() => setMenuOpen(false)}
                             />
                           ))}
@@ -455,16 +474,17 @@ export default function Navbar() {
                             href={item.href}
                             icon={item.icon}
                             label={item.label}
+                            surface="light"
                             onClick={() => setMenuOpen(false)}
                           />
                         ))}
                       </div>
 
-                      <div className="border-t border-white/10 p-2">
+                      <div className="border-t border-slate-100 p-2">
                         <button
                           type="button"
                           onClick={handleLogout}
-                          className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium text-rose-300 transition hover:bg-white/6"
+                          className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-bold text-[#FF6A00] transition hover:bg-[#FF6A00]/10"
                         >
                           <LogOut className="h-4 w-4" />
                           Logout
@@ -478,14 +498,14 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/auth/login"
-                  className="inline-flex items-center gap-2 rounded-full border border-orange-400/35 bg-orange-500 px-3 py-2 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,106,0,0.28)] transition hover:bg-orange-400 sm:px-4"
+                  className="inline-flex items-center gap-2 rounded-full border border-orange-400/35 bg-[#FF6A00] px-3 py-2 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,106,0,0.28)] transition hover:bg-orange-500 sm:px-4"
                 >
                   <LogIn className="h-4 w-4" />
                   Sign in
                 </Link>
                 <Link
                   href="/auth/login"
-                    className="hidden rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-[0_12px_24px_rgba(255,255,255,0.08)] transition hover:bg-slate-100 lg:inline-flex"
+                    className="hidden rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#07111F] shadow-[0_12px_24px_rgba(255,255,255,0.08)] transition hover:bg-slate-100 lg:inline-flex"
                 >
                   Get started
                 </Link>
@@ -593,7 +613,7 @@ export default function Navbar() {
                       setMobileOpen(false);
                       handleLogout();
                     }}
-                    className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium text-rose-300 transition hover:bg-white/6"
+                    className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium text-orange-200 transition hover:bg-white/6"
                   >
                     <LogOut className="h-4 w-4" />
                     Logout
@@ -631,18 +651,24 @@ function MenuItem({
   href,
   icon,
   label,
+  surface = "dark",
   onClick,
 }: {
   href: string;
   icon: ReactNode;
   label: string;
+  surface?: "dark" | "light";
   onClick?: () => void;
 }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      className="flex items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium text-white/82 transition hover:bg-white/6 hover:text-white"
+      className={`flex items-center gap-3 rounded-[1rem] px-3 py-3 text-sm font-medium transition ${
+        surface === "light"
+          ? "text-slate-700 hover:bg-slate-50 hover:text-[#07111F]"
+          : "text-white/82 hover:bg-white/6 hover:text-white"
+      }`}
     >
       {icon}
       {label}

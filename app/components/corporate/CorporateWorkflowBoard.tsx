@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { auth } from "@/lib/firebase";
+import { readJsonResponse } from "@/lib/readJsonResponse";
 
 type CorporateWorkflowBoardProps = {
   sectionSlug: string;
@@ -121,10 +122,10 @@ export default function CorporateWorkflowBoard({
         const response = await fetch(`/api/management/work?${params.toString()}`, {
           headers: await getActorHeaders(),
         });
-        const data = (await response.json()) as {
+        const data = await readJsonResponse<{
           error?: string;
           items?: CorporateWorkflowItem[];
-        };
+        }>(response);
 
         if (!response.ok) {
           throw new Error(data.error || "Unable to load workflow items.");
@@ -198,10 +199,10 @@ export default function CorporateWorkflowBoard({
           actorEmail: auth.currentUser?.email || null,
         }),
       });
-      const data = (await response.json()) as {
+      const data = await readJsonResponse<{
         error?: string;
         item?: CorporateWorkflowItem;
-      };
+      }>(response);
 
       if (!response.ok || !data.item) {
         throw new Error(data.error || "Unable to create workflow item.");
@@ -237,10 +238,10 @@ export default function CorporateWorkflowBoard({
           actorEmail: auth.currentUser?.email || null,
         }),
       });
-      const data = (await response.json()) as {
+      const data = await readJsonResponse<{
         error?: string;
         item?: CorporateWorkflowItem;
-      };
+      }>(response);
 
       if (!response.ok || !data.item) {
         throw new Error(data.error || "Unable to update workflow status.");

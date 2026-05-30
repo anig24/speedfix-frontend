@@ -68,22 +68,21 @@ export default function ServiceCatalogDirectory({
             >
               <div className="relative h-72 overflow-hidden bg-slate-100">
                 <Image
-                  src={service.image}
+                  src={presentation.image}
                   alt={`${service.name} service team`}
                   fill
                   sizes="(max-width: 1280px) 100vw, 50vw"
                   className={`object-cover transition duration-700 group-hover/service:scale-105 ${presentation.imagePosition}`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/38 via-slate-950/4 to-transparent" />
                 <div
-                  className={`absolute left-4 top-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/94 shadow-[0_10px_30px_rgba(15,23,42,0.12)] ${presentation.iconWrap}`}
+                  className={`absolute left-4 top-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white bg-white shadow-[0_10px_30px_rgba(15,23,42,0.12)] ${presentation.iconWrap}`}
                 >
                   <ServiceIcon className="h-5 w-5" />
                 </div>
                 <button
                   type="button"
                   onClick={() => handleQuickAdd(service)}
-                  className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/94 text-slate-700 transition hover:border-slate-300 hover:bg-white"
+                  className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white bg-white text-slate-700 transition hover:border-slate-300 hover:bg-white"
                   aria-label={`Add ${service.name} to cart`}
                 >
                   {noticeKey === `${service.slug}:category` ? (
@@ -98,7 +97,7 @@ export default function ServiceCatalogDirectory({
                   <ServiceIcon className="h-4 w-4" />
                   Category
                 </span>
-                <div className="absolute bottom-4 right-4 rounded-[1.2rem] border border-white/55 bg-white/88 px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.12)] backdrop-blur-md">
+                <div className="absolute bottom-4 right-4 rounded-[1.2rem] border border-white bg-white px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.12)]">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     SpeedFix crew
                   </p>
@@ -260,26 +259,25 @@ export default function ServiceCatalogDirectory({
                 </div>
 
                 <div
-                  className="relative h-72 overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/70"
+                  className="relative h-72 overflow-hidden rounded-[1.35rem] border border-white bg-white"
                 >
                   <Image
-                    src={service.image}
+                    src={presentation.image}
                     alt={`${service.name} service team`}
                     fill
                     sizes="280px"
                     className={`object-cover transition duration-700 group-hover/service:scale-105 ${presentation.imagePosition}`}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-slate-950/10 to-transparent" />
                   <motion.div
                     whileHover={{ scale: 1.04 }}
-                    className={`absolute left-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white/92 shadow-[0_10px_30px_rgba(15,23,42,0.12)] ${presentation.iconWrap}`}
+                    className={`absolute left-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white bg-white shadow-[0_10px_30px_rgba(15,23,42,0.12)] ${presentation.iconWrap}`}
                   >
                     <ServiceIcon className="h-5 w-5" />
                   </motion.div>
                 </div>
               </div>
 
-              <div className="rounded-[1.45rem] border border-white/80 bg-white/88 p-4">
+              <div className="rounded-[1.45rem] border border-white bg-white p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">

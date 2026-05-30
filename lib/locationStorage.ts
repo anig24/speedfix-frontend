@@ -141,10 +141,21 @@ export function readStoredCoordinates() {
     return null;
   }
 
-  const latitude = Number(win.localStorage.getItem(LATITUDE_KEY));
-  const longitude = Number(win.localStorage.getItem(LONGITUDE_KEY));
+  const storedLatitude = win.localStorage.getItem(LATITUDE_KEY);
+  const storedLongitude = win.localStorage.getItem(LONGITUDE_KEY);
 
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+  if (storedLatitude === null || storedLongitude === null) {
+    return null;
+  }
+
+  const latitude = Number(storedLatitude);
+  const longitude = Number(storedLongitude);
+
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    (latitude === 0 && longitude === 0)
+  ) {
     return null;
   }
 

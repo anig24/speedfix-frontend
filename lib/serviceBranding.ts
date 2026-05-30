@@ -8,14 +8,83 @@ export type ServiceFamily =
   | "field";
 
 const FAMILY_ARTWORK: Record<ServiceFamily, string> = {
-  cleaning: "/services/illustrations/uniform-cleaning.svg",
-  electrical: "/services/illustrations/uniform-electrical.svg",
-  plumbing: "/services/illustrations/uniform-plumbing.svg",
-  climate: "/services/illustrations/uniform-climate.svg",
-  craft: "/services/illustrations/uniform-craft.svg",
-  painting: "/services/illustrations/uniform-painting.svg",
-  field: "/services/illustrations/uniform-field.svg",
+  cleaning: "/services/speedfix-cleaning-kitchen.png",
+  electrical: "/services/speedfix-electrician-switch.png",
+  plumbing: "/services/speedfix-plumbing-sink.png",
+  climate: "/services/speedfix-ac-service.png",
+  craft: "/services/speedfix-tv-installation.png",
+  painting: "/services/cleaning.png",
+  field: "/services/cleaning.png",
 };
+
+const DIRECT_ARTWORK: Array<{ keywords: string[]; image: string }> = [
+  {
+    keywords: ["fan-installation", "fan-and-light", "fan"],
+    image: "/services/fan-installation.png",
+  },
+  {
+    keywords: [
+      "cleaning",
+      "kitchen-deep-cleaning",
+      "bathroom-deep-cleaning",
+      "move-in-cleaning",
+      "maid",
+      "laundry",
+      "sofa",
+      "mattress",
+      "curtain",
+    ],
+    image: "/services/speedfix-cleaning-kitchen.png",
+  },
+  {
+    keywords: [
+      "electrician",
+      "switchboard",
+      "socket",
+      "wiring",
+      "fan",
+      "inverter",
+      "ups",
+    ],
+    image: "/services/speedfix-electrician-switch.png",
+  },
+  {
+    keywords: [
+      "plumbing",
+      "bathroom-plumbing",
+      "kitchen-plumbing",
+      "drain",
+      "leak",
+      "waterproofing",
+      "water-purifier",
+      "purifier",
+      "filter",
+      "ro-service",
+      "uv-lamp",
+      "geyser",
+    ],
+    image: "/services/speedfix-plumbing-sink.png",
+  },
+  {
+    keywords: ["ac-service", "split-ac", "window-ac", "jet-cleaning", "ac-repair"],
+    image: "/services/speedfix-ac-service.png",
+  },
+  {
+    keywords: [
+      "appliance-repair",
+      "appliance-installation",
+      "washing-machine",
+      "microwave",
+      "chimney",
+      "multi-appliance",
+    ],
+    image: "/services/speedfix-appliance-repair.png",
+  },
+  {
+    keywords: ["tv", "cctv", "security", "home-office", "smart-home"],
+    image: "/services/speedfix-tv-installation.png",
+  },
+];
 
 const KEYWORD_TO_FAMILY: Array<{ family: ServiceFamily; keywords: string[] }> = [
   {
@@ -109,6 +178,15 @@ export function getServiceFamily(serviceSlug: string): ServiceFamily {
 }
 
 export function getServiceArtwork(serviceSlug: string, fallbackImage?: string) {
+  const normalized = serviceSlug.toLowerCase();
+  const directMatch = DIRECT_ARTWORK.find(({ keywords }) =>
+    keywords.some((keyword) => normalized.includes(keyword))
+  );
+
+  if (directMatch) {
+    return directMatch.image;
+  }
+
   const family = getServiceFamily(serviceSlug);
-  return FAMILY_ARTWORK[family] || fallbackImage || "/services/cleaning.png";
+  return fallbackImage || FAMILY_ARTWORK[family] || "/services/cleaning.png";
 }

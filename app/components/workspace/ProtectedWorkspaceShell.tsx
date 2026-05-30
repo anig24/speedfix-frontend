@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { LoaderCircle, LogOut, ShieldCheck } from "lucide-react";
+import { LoaderCircle, LogOut, Settings2, ShieldCheck } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { clearWorkspaceSessionCookies } from "@/lib/clientAuthSession";
 import { getClientUserProfile } from "@/lib/clientUserProfile";
@@ -166,6 +166,25 @@ export default function ProtectedWorkspaceShell({
               })}
             </div>
           </div>
+
+          {workspace === "customer" && (
+            <div className="mt-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Customer controls
+              </p>
+              <Link
+                href="/customer/settings"
+                className={`mt-4 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition ${
+                  pathname === "/customer/settings"
+                    ? "bg-slate-950 text-white"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <Settings2 className="h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            </div>
+          )}
 
           <button
             type="button"

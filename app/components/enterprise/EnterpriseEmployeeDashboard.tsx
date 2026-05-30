@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Building2, CheckCircle2, LoaderCircle } from "lucide-react";
 import LiveOperationsAnimation from "@/app/components/enterprise/LiveOperationsAnimation";
 import { auth } from "@/lib/firebase";
+import { readJsonResponse } from "@/lib/readJsonResponse";
 import {
   enterpriseModules,
   type EnterpriseKpi,
@@ -102,10 +103,10 @@ export default function EnterpriseEmployeeDashboard({
           `/api/enterprise/employee-dashboard?workspace=${workspace}`,
           { headers }
         );
-        const data = (await response.json()) as {
+        const data = await readJsonResponse<{
           error?: string;
           dashboard?: EnterpriseDashboardResponse;
-        };
+        }>(response);
 
         if (!response.ok || !data.dashboard) {
           throw new Error(data.error || "Unable to load enterprise dashboard.");

@@ -32,7 +32,7 @@ export default function ServiceSubcategoryPage() {
 
   if (!result) {
     return (
-      <div className="bg-[#f6efe4] px-6 py-20 text-slate-900">
+      <div className="bg-white px-6 py-20 text-slate-900">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-10 text-center premium-card">
           <h1 className="text-3xl font-semibold text-slate-950">
             Subcategory not found
@@ -57,13 +57,16 @@ export default function ServiceSubcategoryPage() {
   const recommendedPackage =
     service.packages.find((pkg) => pkg.name === subcategory.recommendedPackage) ||
     service.packages[0];
-  const presentation = getServicePresentation(service.slug, service.image);
+  const presentation = getServicePresentation(
+    `${service.slug} ${subcategory.slug} ${subcategory.name}`,
+    service.image
+  );
   const ServiceIcon = presentation.icon;
 
   return (
-    <div className="bg-[#f6efe4] text-slate-900">
+    <div className="bg-white text-slate-900">
       <section className="relative overflow-hidden border-b border-slate-200/80">
-        <div className="absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top_left,_rgba(255,106,0,0.18),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(15,23,42,0.13),_transparent_36%)]" />
+        <div className="absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top_left,_rgba(255,106,0,0.08),_transparent_44%)]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-16">
           <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
@@ -139,15 +142,15 @@ export default function ServiceSubcategoryPage() {
                   </div>
                 </div>
 
-                <div className="rounded-[1.8rem] border border-slate-200 bg-slate-950 p-5 text-white premium-card">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                <div className="rounded-[1.8rem] border border-[#FF6A00]/20 bg-[#fff7ef] p-5 premium-card">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#FF6A00]">
                     Best when
                   </p>
                   <div className="mt-4 space-y-2">
                     {subcategory.problemSignals.map((signal) => (
                       <div
                         key={signal}
-                        className="flex items-start gap-2 text-sm leading-6 text-slate-300"
+                        className="flex items-start gap-2 text-sm leading-6 text-slate-700"
                       >
                         <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
                         {signal}
@@ -157,16 +160,30 @@ export default function ServiceSubcategoryPage() {
                 </div>
               </div>
 
-              <div className="relative h-[24rem] overflow-hidden rounded-[2rem] premium-card">
-                <Image
-                  src={presentation.image}
-                  alt={`${subcategory.name} service visual`}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/78 via-slate-950/10 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 rounded-[1.6rem] bg-white/90 p-5">
+              <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-3 premium-card">
+                <div className="relative h-[23rem] overflow-hidden rounded-[1.55rem] bg-slate-100">
+                  <Image
+                    src={presentation.image}
+                    alt={`${subcategory.name} service visual`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                    className="object-cover"
+                  />
+                </div>
+
+                <div className="mt-3 rounded-[1.35rem] border border-[#FF6A00]/20 bg-[#fff7ef] p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <div className="inline-flex items-center gap-2 text-sm font-bold text-[#07111F]">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6A00] opacity-30" />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FF6A00]" />
+                      </span>
+                      Verified SpeedFix crew
+                    </div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FF6A00]">
+                      Live task status
+                    </p>
+                  </div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                     Included in this task
                   </p>

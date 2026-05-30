@@ -29,7 +29,7 @@ export default function ServiceCategoryPage() {
 
   if (!service) {
     return (
-      <div className="bg-[#f6efe4] px-6 py-20 text-slate-900">
+      <div className="bg-white px-6 py-20 text-slate-900">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-10 text-center premium-card">
           <h1 className="text-3xl font-semibold text-slate-950">
             Service not found
@@ -54,9 +54,9 @@ export default function ServiceCategoryPage() {
   const ServiceIcon = presentation.icon;
 
   return (
-    <div className="bg-[#f6efe4] text-slate-900">
+    <div className="bg-white text-slate-900">
       <section className="relative overflow-hidden border-b border-slate-200/80">
-        <div className="absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top_left,_rgba(255,106,0,0.18),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(15,23,42,0.13),_transparent_36%)]" />
+        <div className="absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top_left,_rgba(255,106,0,0.08),_transparent_44%)]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-16">
           <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
@@ -121,37 +121,54 @@ export default function ServiceCategoryPage() {
                   </p>
                 </div>
 
-                <div className="rounded-[1.8rem] border border-slate-200 bg-slate-950 p-5 text-white premium-card">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                <div className="rounded-[1.8rem] border border-[#FF6A00]/20 bg-[#fff7ef] p-5 premium-card">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#FF6A00]">
                     Current offer
                   </p>
-                  <p className="mt-3 text-lg font-semibold">{service.offer}</p>
-                  <p className="mt-2 text-sm leading-7 text-slate-300">
+                  <p className="mt-3 text-lg font-semibold text-[#07111F]">{service.offer}</p>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
                     Add the right package to cart here, or drill down into a
                     specific subcategory before checkout.
                   </p>
                 </div>
               </div>
 
-              <div className="relative h-[24rem] overflow-hidden rounded-[2rem] premium-card">
-                <Image
-                  src={presentation.image}
-                  alt={`${service.name} category visual`}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/10 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 flex flex-wrap gap-2">
+              <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-3 premium-card">
+                <div className="relative h-[23rem] overflow-hidden rounded-[1.55rem] bg-slate-100">
+                  <Image
+                    src={presentation.image}
+                    alt={`${service.name} category visual`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                    className="object-cover"
+                  />
+                </div>
+
+                <div className="mt-3 rounded-[1.35rem] border border-[#FF6A00]/20 bg-[#fff7ef] p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="inline-flex items-center gap-2 text-sm font-bold text-[#07111F]">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6A00] opacity-30" />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FF6A00]" />
+                      </span>
+                      Verified SpeedFix crew
+                    </div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FF6A00]">
+                      Live slots
+                    </p>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
                   {service.subcategories.slice(0, 4).map((subcategory) => (
                     <Link
                       key={subcategory.slug}
                       href={`/services/${service.slug}/${subcategory.slug}`}
-                      className="rounded-full bg-white/92 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-800"
+                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-800 shadow-sm"
                     >
                       {subcategory.name}
                     </Link>
                   ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -284,16 +301,16 @@ export default function ServiceCategoryPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="rounded-[2.2rem] bg-slate-950 px-8 py-10 text-white premium-card md:px-12">
+        <div className="rounded-[2.2rem] border border-[#FF6A00]/20 bg-[#fff7ef] px-8 py-10 text-[#07111F] premium-card md:px-12">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#FF6A00]">
                 Ready to book
               </p>
               <h2 className="mt-3 display-font text-4xl">
                 Add this service to cart now or drill into a task first
               </h2>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">
                 The full checkout flow supports address entry, coupon
                 application, payment method selection, and Razorpay payment.
               </p>
@@ -301,14 +318,14 @@ export default function ServiceCategoryPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/cart"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+                className="inline-flex items-center gap-2 rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#FF6A00]"
               >
                 View cart
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href={`/services/${service.slug}/${service.subcategories[0]?.slug}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/30"
+                className="inline-flex items-center gap-2 rounded-full border border-[#FF6A00]/30 bg-white px-6 py-3 text-sm font-semibold text-[#07111F] transition hover:border-[#FF6A00]"
               >
                 Explore top subcategory
                 <ChevronRight className="h-4 w-4" />

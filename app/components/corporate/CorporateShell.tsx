@@ -11,7 +11,6 @@ import {
   LoaderCircle,
   LogOut,
   ShieldCheck,
-  Settings,
   Bell,
   Search,
 } from "lucide-react";

@@ -2,542 +2,892 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
+  BadgeCheck,
   Bike,
-  CheckCircle2,
+  CalendarDays,
   ChevronRight,
+  LocateFixed,
   MapPin,
   Search,
   ShieldCheck,
-  ShoppingBag,
-  Wrench,
+  Sparkles,
+  Star,
+  UserCheck,
+  type LucideIcon,
 } from "lucide-react";
-import { useDeferredValue, useMemo, useState, useSyncExternalStore } from "react";
-import LocationGate from "@/app/components/LocationGate";
-import ServiceCatalogDirectory from "@/app/components/services/ServiceCatalogDirectory";
-import { getServicePresentation } from "@/app/components/services/servicePresentation";
 import {
-  getFeaturedSubcategories,
-  operatingCities,
-  serviceCatalog,
-} from "@/lib/serviceCatalog";
+  type ReactNode,
+  useDeferredValue,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import LocationGate from "@/app/components/LocationGate";
+import { getFeaturedSubcategories } from "@/lib/serviceCatalog";
 import { readStoredCity, subscribeToStoredCity } from "@/lib/locationStorage";
 
-const reveal = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
-  transition: { duration: 0.45, ease: "easeOut" as const },
+type TaskCard = {
+  title: string;
+  href: string;
+  image: string;
+  position: string;
+  status: string;
 };
+
+const taskCards: TaskCard[] = [
+  {
+    title: "Kitchen Cleaning",
+    href: "/services/cleaning",
+    image: "/services/speedfix-cleaning-kitchen.png",
+    position: "center 34%",
+    status: "Kitchen reset",
+  },
+  {
+    title: "Electrician",
+    href: "/services/electrician",
+    image: "/services/speedfix-electrician-switch.png",
+    position: "center 34%",
+    status: "Switch check",
+  },
+  {
+    title: "Plumbing",
+    href: "/services/plumbing",
+    image: "/services/speedfix-plumbing-sink.png",
+    position: "center 42%",
+    status: "Leak repair",
+  },
+  {
+    title: "AC Service",
+    href: "/services/ac-service",
+    image: "/services/speedfix-ac-service.png",
+    position: "center 38%",
+    status: "Cooling tune-up",
+  },
+  {
+    title: "Appliance Repair",
+    href: "/services/appliance-repair",
+    image: "/services/speedfix-appliance-repair.png",
+    position: "center 35%",
+    status: "Machine test",
+  },
+  {
+    title: "TV Setup",
+    href: "/services/appliance-installation",
+    image: "/services/speedfix-tv-installation.png",
+    position: "center 36%",
+    status: "Home setup",
+  },
+];
+
+const trustPills: Array<{ label: string; icon: LucideIcon }> = [
+  { label: "Top rated experts", icon: Star },
+  { label: "Verified workers", icon: ShieldCheck },
+  { label: "Professional training", icon: UserCheck },
+];
+
+const cityCoverage = [
+  {
+    city: "Bengaluru",
+    areas: 27,
+    image: "/cities/bangalore.png",
+    neighborhoods: [
+      "Bellandur",
+      "Koramangala",
+      "Brookefield",
+      "Indiranagar",
+      "BTM Layout",
+      "Hebbal",
+      "HSR Layout",
+      "Whitefield",
+      "Hoodi",
+      "Electronic City",
+      "Yelahanka",
+      "Sarjapura",
+      "Marathahalli",
+      "Hulimavu",
+      "Kudlu",
+      "Mahadevapura",
+      "Mahalakshmi Layout",
+      "Munnekollal",
+      "Nagasandra",
+      "Raysandra",
+      "Seegahalli",
+      "Singasandra",
+      "Tejaswini Nagar",
+      "Thanisandra",
+      "Varthur",
+      "Yeshwanthpur",
+      "Banashankari",
+    ],
+  },
+  {
+    city: "Kolkata",
+    areas: 12,
+    image: "/cities/kolkata.png",
+    neighborhoods: [
+      "Salt Lake",
+      "New Town",
+      "Park Street",
+      "Ballygunge",
+      "Alipore",
+      "Tollygunge",
+      "Dum Dum",
+      "Howrah",
+      "Behala",
+      "Rajarhat",
+      "Garia",
+      "Jadavpur",
+    ],
+  },
+  {
+    city: "Mumbai",
+    areas: 24,
+    image: "/cities/mumbai.png",
+    neighborhoods: [
+      "Andheri",
+      "Bandra",
+      "Powai",
+      "Chembur",
+      "Dadar",
+      "Worli",
+      "Borivali",
+      "Malad",
+      "Thane",
+      "Navi Mumbai",
+      "Goregaon",
+      "Ghatkopar",
+      "Mulund",
+      "Juhu",
+      "Colaba",
+      "Lower Parel",
+      "Vikhroli",
+      "Kandivali",
+      "Santacruz",
+      "Versova",
+      "Mira Road",
+      "Bhayandar",
+      "Khar",
+      "Sion",
+    ],
+  },
+  {
+    city: "Delhi NCR",
+    areas: 18,
+    image: "/cities/delhi.png",
+    neighborhoods: [
+      "South Delhi",
+      "Dwarka",
+      "Rohini",
+      "Janakpuri",
+      "Noida",
+      "Gurugram",
+      "Ghaziabad",
+      "Faridabad",
+      "Greater Noida",
+      "Indirapuram",
+      "Saket",
+      "Vasant Kunj",
+      "Karol Bagh",
+      "Lajpat Nagar",
+      "Mayur Vihar",
+      "Pitampura",
+      "Preet Vihar",
+      "Rajouri Garden",
+    ],
+  },
+  {
+    city: "Hyderabad",
+    areas: 16,
+    image: "/cities/hyderabad.png",
+    neighborhoods: [
+      "HITEC City",
+      "Gachibowli",
+      "Madhapur",
+      "Kondapur",
+      "Jubilee Hills",
+      "Banjara Hills",
+      "Kukatpally",
+      "Miyapur",
+      "Begumpet",
+      "Secunderabad",
+      "Manikonda",
+      "Kompally",
+      "Nallagandla",
+      "Ameerpet",
+      "Uppal",
+      "Attapur",
+    ],
+  },
+  {
+    city: "Chennai",
+    areas: 14,
+    image: "/cities/chennai.png",
+    neighborhoods: [
+      "Adyar",
+      "Anna Nagar",
+      "T Nagar",
+      "Velachery",
+      "OMR",
+      "Porur",
+      "Tambaram",
+      "Nungambakkam",
+      "Mylapore",
+      "Guindy",
+      "Chromepet",
+      "Sholinganallur",
+      "Perungudi",
+      "Medavakkam",
+    ],
+  },
+];
+
+const steps: Array<{ title: string; text: string; icon: LucideIcon }> = [
+  {
+    title: "Choose a service",
+    text: "Pick the work you need from clear home-service cards.",
+    icon: Sparkles,
+  },
+  {
+    title: "Select time and address",
+    text: "Add your home location and choose a comfortable slot.",
+    icon: CalendarDays,
+  },
+  {
+    title: "Track every update",
+    text: "Follow worker, rider, payment, and support status in one place.",
+    icon: LocateFixed,
+  },
+];
 
 export default function HomePage() {
   const city = useSyncExternalStore(subscribeToStoredCity, readStoredCity, () => "");
   const [query, setQuery] = useState("");
   const [showLocationGate, setShowLocationGate] = useState(false);
+  const [selectedCityIndex, setSelectedCityIndex] = useState(0);
+  const [showAllAreas, setShowAllAreas] = useState(false);
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
+  const featuredTasks = getFeaturedSubcategories(6);
+  const selectedCoverage = cityCoverage[selectedCityIndex] || cityCoverage[0];
+  const visibleAreas = showAllAreas
+    ? selectedCoverage.neighborhoods
+    : selectedCoverage.neighborhoods.slice(0, 12);
 
-  const totalCategories = serviceCatalog.length;
-  const totalSubcategories = useMemo(
-    () => serviceCatalog.reduce((sum, service) => sum + service.subcategories.length, 0),
-    []
-  );
+  const selectCoverageCity = (index: number) => {
+    setSelectedCityIndex(index);
+    setShowAllAreas(false);
+  };
 
-  const filteredServices = useMemo(() => {
-    if (!deferredQuery) {
-      return serviceCatalog;
-    }
-
-    return serviceCatalog.filter((service) => {
-      const haystack = [
-        service.name,
-        service.tagline,
-        service.description,
-        service.offer,
-        ...service.searchTerms,
-        ...service.subcategories.flatMap((subcategory) => [
-          subcategory.name,
-          subcategory.tagline,
-          subcategory.description,
-        ]),
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(deferredQuery);
-    });
-  }, [deferredQuery]);
-
-  const heroServices = useMemo(() => filteredServices.slice(0, 6), [filteredServices]);
-
-  const featuredTasks = useMemo(() => {
-    const tasks = getFeaturedSubcategories(6);
-
-    if (!deferredQuery) {
-      return tasks;
-    }
-
-    return tasks.filter(({ service, subcategory }) =>
-      [service.name, subcategory.name, subcategory.tagline, subcategory.description]
-        .join(" ")
-        .toLowerCase()
-        .includes(deferredQuery)
-    );
-  }, [deferredQuery]);
+  const searchHref = useMemo(() => {
+    return deferredQuery ? `/services?search=${encodeURIComponent(query)}` : "/services";
+  }, [deferredQuery, query]);
 
   return (
-    <div className="public-shell overflow-x-hidden text-slate-900">
-      <section className="relative overflow-hidden border-b border-slate-200/80">
-        <div className="hero-grid absolute inset-0 opacity-70" />
-        <div className="public-hero-glow absolute inset-x-0 top-0 h-[26rem]" />
-
-        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-            <motion.div {...reveal} className="min-w-0 space-y-7">
-              <div className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-4 py-2 text-sm text-slate-700">
-                <ShieldCheck className="h-4 w-4 text-orange-500" />
-                Verified field teams and structured booking
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500">
-                  SpeedFix
-                </p>
-                <h1 className="display-font max-w-4xl text-4xl leading-tight text-slate-950 sm:text-5xl md:text-6xl">
-                  Home Services
-                </h1>
-                <p className="max-w-2xl text-lg leading-8 text-slate-600">
-                  Repairs, cleaning, maintenance, and installations through
-                  category-based booking, standardized task flows, and customer support.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/services"
-                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  Browse services
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/cart"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
-                >
-                  Open cart
-                  <ShoppingBag className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/rides"
-                  className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-sky-300"
-                >
-                  Book bike ride
-                  <Bike className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/workers"
-                  className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-[#fff2df] px-6 py-3 text-sm font-semibold text-orange-800 transition hover:border-orange-300 hover:bg-white"
-                >
-                  Join as worker
-                  <Wrench className="h-4 w-4" />
-                </Link>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-3">
-                {[
-                  [`${totalCategories}`, "service categories"],
-                  [`${totalSubcategories}+`, "task options"],
-                  [`${operatingCities.length}`, "service cities"],
-                ].map(([value, label]) => (
-                  <div
-                    key={label}
-                    className="surface-panel rounded-[1.8rem] border border-slate-200 p-5"
-                  >
-                    <p className="display-font text-4xl text-slate-950">{value}</p>
-                    <p className="mt-2 text-sm text-slate-500">{label}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div
-              {...reveal}
-              className="surface-panel min-w-0 rounded-[2.25rem] border border-slate-200 p-6"
-            >
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                      Search and booking
-                    </p>
-                    <h2 className="mt-3 text-2xl font-semibold text-slate-950">
-                      Find the right category and task
-                    </h2>
-                    <p className="mt-2 text-sm leading-7 text-slate-600">
-                      Search services, select the required category, and open the exact task page.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowLocationGate(true)}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300"
-                  >
-                    <MapPin className="h-4 w-4 text-orange-500" />
-                    {city || "Choose city"}
-                  </button>
-                </div>
-
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search AC repair, leak fix, deep cleaning..."
-                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-11 py-4 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-                  />
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {heroServices.map((service) => {
-                    const presentation = getServicePresentation(service.slug, service.image);
-                    const ServiceIcon = presentation.icon;
-
-                    return (
-                      <Link
-                        key={service.slug}
-                        href={`/services/${service.slug}`}
-                        className="rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-white"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <div
-                              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${presentation.iconWrap}`}
-                            >
-                              <ServiceIcon className="h-4 w-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-slate-950">
-                                {service.name}
-                              </p>
-                              <p className="mt-1 truncate text-xs text-slate-500">
-                                {service.tagline}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="shrink-0 text-xs font-semibold text-slate-500">
-                            Rs. {service.basePrice}+
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-slate-200/80 bg-white/70">
-        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Why SpeedFix
-              </p>
-              <h2 className="mt-3 display-font text-4xl text-slate-950">
-                Standardized service delivery
-              </h2>
-            </div>
-            <p className="max-w-2xl text-sm leading-7 text-slate-600">
-              The customer journey is organized around category discovery, task selection,
-              booking support, and field execution.
+    <main className="bg-white text-[#07111F]">
+      <section className="border-b border-slate-100 bg-white">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-12 lg:grid-cols-[0.92fr_1.08fr] lg:px-8 lg:py-16">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#FF6A00]/20 bg-[#FF6A00]/10 px-4 py-2 text-sm font-extrabold text-[#07111F]">
+              <Sparkles className="h-4 w-4 text-[#FF6A00]" />
+              SpeedFix home services in {city || "your city"}
             </p>
-          </div>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              {
-                title: "Category-based booking",
-                text: "Customers begin with the required service category and move into the exact task.",
-              },
-              {
-                title: "Verified field teams",
-                text: "Service delivery is aligned to assigned professionals and controlled workflows.",
-              },
-              {
-                title: "Task-level pricing",
-                text: "Task pages are structured around specific requirements and service scope.",
-              },
-              {
-                title: "Customer support",
-                text: "Booking, cart, address, and checkout remain within one connected flow.",
-              },
-            ].map((item) => (
-              <motion.article
-                key={item.title}
-                {...reveal}
-                className="surface-panel rounded-[2rem] border border-slate-200 p-6"
-              >
-                <h3 className="text-xl font-semibold text-slate-950">{item.title}</h3>
-                <p className="mt-4 text-sm leading-7 text-slate-600">{item.text}</p>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-slate-200/80 bg-[#07111f] text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8">
-          <motion.div {...reveal}>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-300">
-              Worker opportunity
-            </p>
-            <h2 className="mt-3 display-font text-4xl leading-tight md:text-5xl">
-              Build regular work with verified SpeedFix appointments
-            </h2>
-            <p className="mt-5 max-w-2xl text-sm leading-8 text-slate-300">
-              Skilled electricians, plumbers, cleaners, AC technicians, and
-              home-service professionals can create a verified worker profile,
-              add salary payout bank details, share live location, and receive
-              customer appointments after booking.
+            <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.02] tracking-tight md:text-6xl">
+              One house help expert, <span className="text-[#FF6A00]">to do it all</span>
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
+              Book trained SpeedFix professionals for cleaning, repairs,
+              maintenance, installations, and bike pickup.
             </p>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              {[
-                "DigiLocker Aadhaar and PAN verification",
-                "Salary payout bank and IFSC setup",
-                "Booking ID, customer contact, and live status flow",
-              ].map((item) => (
-                <div key={item} className="rounded-lg border border-white/10 bg-white/5 p-4">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-300" />
-                  <p className="mt-3 text-sm leading-6 text-slate-200">{item}</p>
-                </div>
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              {trustPills.map(({ label, icon: Icon }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-extrabold text-[#07111F] shadow-sm"
+                >
+                  <Icon className="h-4 w-4 text-[#FF6A00]" />
+                  {label}
+                </span>
               ))}
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/workers"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-              >
-                Start worker verification
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200">
-                <ShieldCheck className="h-4 w-4 text-orange-300" />
-                For verified field professionals
-              </span>
-            </div>
-          </motion.div>
-
-          <motion.div
-            {...reveal}
-            className="relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]"
-          >
-            <Image
-              src="/hero.png"
-              alt="SpeedFix home service professional"
-              width={760}
-              height={520}
-              className="h-[360px] w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
-            <div className="relative m-6 -mt-32 rounded-lg border border-white/10 bg-slate-950/80 p-5 backdrop-blur-md">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Worker route
-              </p>
-              <p className="mt-2 text-2xl font-semibold">speedfix.co.in/workers</p>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
-                A step-by-step place to join, verify, add payout details, and
-                check assigned appointments.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-              Categories
-            </p>
-            <h2 className="mt-3 display-font text-4xl text-slate-950">
-              Browse categories and open the required work
-            </h2>
-          </div>
-          <p className="max-w-2xl text-sm leading-7 text-slate-600">
-            The directory is structured to help customers identify the right category
-            and proceed into the exact service task.
-          </p>
-        </div>
-
-        <div className="mt-10">
-          <ServiceCatalogDirectory
-            services={filteredServices}
-            maxItems={4}
-            subcategoriesPerCard={3}
-            variant="home"
-          />
-        </div>
-
-        <div className="mt-8 flex justify-center">
-          <Link
-            href="/services"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
-          >
-            View full service directory
-            <ChevronRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-
-      <section className="border-y border-slate-200/80 bg-white/70">
-        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-                City coverage
-              </p>
-              <h2 className="mt-3 display-font text-4xl text-slate-950">
-                Operating cities
-              </h2>
-            </div>
-            <p className="max-w-2xl text-sm leading-7 text-slate-600">
-              Services are organized by supported city and routed through the same booking flow.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {operatingCities.map((item) => (
-              <motion.div
-                key={item}
-                {...reveal}
-                className="surface-panel rounded-[1.6rem] border border-slate-200 p-5"
-              >
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-orange-500" />
-                  <p className="text-sm font-semibold text-slate-950">{item}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-              Task pages
-            </p>
-            <h2 className="mt-3 display-font text-4xl text-slate-950">
-              Common service requirements
-            </h2>
-          </div>
-          <p className="max-w-2xl text-sm leading-7 text-slate-600">
-            These direct task pages are useful when the customer already knows the required work.
-          </p>
-        </div>
-
-        <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {featuredTasks.map(({ service, subcategory }) => {
-            const presentation = getServicePresentation(service.slug, service.image);
-            const ServiceIcon = presentation.icon;
-
-            return (
-              <motion.article
-                key={`${service.slug}-${subcategory.slug}`}
-                {...reveal}
-                whileHover={{ y: -6 }}
-                className="surface-panel rounded-[2rem] border border-slate-200 p-5"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${presentation.iconWrap}`}
-                  >
-                    <ServiceIcon className="h-4 w-4" />
-                    {service.name}
-                  </span>
-                  <span className="rounded-full bg-[#fff2df] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-orange-700">
-                    {subcategory.turnaround}
-                  </span>
-                </div>
-
-                <h3 className="mt-5 text-2xl font-semibold text-slate-950">
-                  {subcategory.name}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">
-                  {subcategory.description}
-                </p>
-
-                <div className="mt-5 space-y-2">
-                  {subcategory.problemSignals.slice(0, 2).map((signal) => (
-                    <div
-                      key={signal}
-                      className="flex items-start gap-2 text-sm leading-6 text-slate-600"
-                    >
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                      {signal}
-                    </div>
-                  ))}
-                </div>
-
-                <Link
-                  href={`/services/${service.slug}/${subcategory.slug}`}
-                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            <div className="mt-7 max-w-2xl rounded-[1.5rem] border border-slate-200 bg-white p-2.5 shadow-[0_18px_50px_rgba(7,17,31,0.08)]">
+              <div className="grid gap-2.5 md:grid-cols-[auto_minmax(0,1fr)_auto]">
+                <button
+                  type="button"
+                  onClick={() => setShowLocationGate(true)}
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-extrabold text-[#07111F]"
                 >
-                  Open task page
+                  <MapPin className="h-4 w-4 text-[#FF6A00]" />
+                  {city || "Bengaluru"}
+                </button>
+                <label className="relative block">
+                  <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                  <input
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search cleaning, plumber, AC repair..."
+                    className="h-14 w-full rounded-full border border-slate-200 bg-slate-50 pl-12 pr-5 text-sm font-bold text-[#07111F] outline-none transition focus:border-[#FF6A00] focus:bg-white"
+                  />
+                </label>
+                <Link
+                  href={searchHref}
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#FF6A00] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(255,106,0,0.18)] transition hover:bg-[#07111F]"
+                >
+                  Book now
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-              </motion.article>
-            );
-          })}
+              </div>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_22px_70px_rgba(7,17,31,0.1)]">
+            <div className="relative h-[340px] md:h-[460px]">
+              <Image
+                src="/hero.png"
+                alt="SpeedFix professionals ready for home service"
+                fill
+                priority
+                sizes="(min-width: 1024px) 640px, 100vw"
+                className="object-cover object-[66%_center]"
+              />
+            </div>
+            <div className="absolute bottom-5 left-5 rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3 text-[#07111F] shadow-lg">
+              <p className="text-sm font-black">4.9 rated teams</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">
+                cleaning + repair + pickup
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <motion.div
-          {...reveal}
-          className="dark-panel rounded-[2.25rem] px-8 py-10 text-white md:px-12 md:py-12"
-        >
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">
-                Customer flow
-              </p>
-              <h2 className="mt-3 display-font text-4xl">
-                Continue to the service directory or cart
-              </h2>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
-                Service selection, cart, address collection, and checkout remain within one customer flow.
-              </p>
+      <section className="bg-white py-12">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="flex flex-col gap-3 text-center">
+            <p className="text-sm font-black uppercase tracking-[0.24em] text-[#FF6A00]">
+              Services
+            </p>
+            <h2 className="text-3xl font-black tracking-tight md:text-5xl">
+              What can your house help do?
+            </h2>
+          </div>
+
+          <div className="mt-8 overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white p-4 shadow-[0_20px_60px_rgba(7,17,31,0.08)] md:p-5">
+            <div className="grid gap-5 rounded-[1.4rem] bg-[#f7f8fa] p-4 md:p-5 lg:grid-cols-[0.92fr_1.08fr]">
+              <div className="flex flex-col justify-center rounded-[1.2rem] border border-slate-200 bg-white p-6 md:p-8">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#FF6A00]">
+                  SpeedFix services
+                </p>
+                <h3 className="mt-3 text-3xl font-black leading-tight md:text-4xl">
+                  Clean, repair, install, and maintain.
+                </h3>
+                <p className="mt-4 max-w-md text-sm font-semibold leading-7 text-slate-600">
+                  Live worker flow, clear service cards, and gentle motion so
+                  customers can understand what to book without strain.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {["Booked", "Assigned", "On the way"].map((label) => (
+                    <span
+                      key={label}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-black text-[#07111F]"
+                    >
+                      <span className="h-2 w-2 rounded-full bg-[#FF6A00] motion-pulse-dot" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <Link
+                  href="/services"
+                  className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-[#07111F] px-5 py-3 text-sm font-black text-white transition hover:bg-[#FF6A00]"
+                >
+                  View all services
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
+
+              <div className="relative overflow-hidden rounded-[1.2rem] border border-slate-200 bg-white">
+                <video
+                  className="h-[280px] w-full object-cover object-center md:h-[360px]"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  poster="/services/speedfix-cleaning-kitchen.png"
+                >
+                  <source src="/videos/speedfix-live-worker.mp4" type="video/mp4" />
+                </video>
+                <div className="border-t border-slate-200 bg-white px-5 py-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FF6A00]">
+                        Live crew preview
+                      </p>
+                      <p className="mt-1 text-sm font-black text-[#07111F]">
+                        Real task movement, calm customer flow
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-[#fff2df] px-3 py-2 text-xs font-black text-[#07111F]">
+                      <span className="h-2 w-2 rounded-full bg-[#FF6A00] motion-pulse-dot" />
+                      Active slots
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/services"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-              >
-                Browse services
-                <Wrench className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/cart"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/30"
-              >
-                Open cart
-                <ShoppingBag className="h-4 w-4" />
-              </Link>
+            <div className="service-live-slider mt-5">
+              <div className="service-live-rail">
+                {[...taskCards, ...taskCards].map((task, index) => (
+                  <div
+                    key={`${task.title}-${index}`}
+                    className="w-[252px] shrink-0 px-2 md:w-[282px]"
+                  >
+                    <PhotoTaskCard task={task} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </motion.div>
+        </div>
+      </section>
+
+      <section className="border-y border-slate-100 bg-[#fafafa] py-12">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm font-black uppercase tracking-[0.24em] text-[#FF6A00]">
+              How it works
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
+              Book home help in 3 simple steps
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-base font-semibold leading-7 text-slate-600">
+              Pick the task, choose a time, and watch every update from one
+              clean SpeedFix flow.
+            </p>
+          </div>
+
+          <SpeedFixBookingFlow />
+        </div>
+      </section>
+
+      <section className="bg-white py-12">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm font-black uppercase tracking-[0.24em] text-[#FF6A00]">
+              Where we serve
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
+              SpeedFix across India
+            </h2>
+          </div>
+
+          <div className="coverage-live-slider mx-auto mt-7 max-w-5xl">
+            <div className="coverage-live-rail">
+              {[...cityCoverage, ...cityCoverage].map((item, index) => {
+                const originalIndex = index % cityCoverage.length;
+                const isSelected = originalIndex === selectedCityIndex;
+
+                return (
+                  <button
+                    key={`${item.city}-${index}`}
+                    type="button"
+                    onClick={() => selectCoverageCity(originalIndex)}
+                    className={`w-[150px] shrink-0 rounded-[1rem] border bg-white p-2.5 text-center shadow-sm transition hover:border-[#FF6A00] md:w-[168px] ${
+                      isSelected
+                      ? "border-[#FF6A00]"
+                      : "border-slate-200"
+                    }`}
+                  >
+                    <div className="relative h-20 overflow-hidden rounded-[0.8rem] bg-slate-100">
+                      <Image
+                        src={item.image}
+                        alt={`${item.city} service area`}
+                        fill
+                        sizes="180px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <h3 className="mt-2 text-base font-black">{item.city}</h3>
+                    <p className="text-xs font-bold text-slate-500">
+                      {item.areas} areas
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-base font-black md:text-lg">
+                Serving{" "}
+                <span className="text-[#FF6A00]">
+                  {selectedCoverage.areas} areas
+                </span>{" "}
+                in {selectedCoverage.city}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAllAreas((current) => !current)}
+                className="rounded-full border border-[#FF6A00]/30 px-4 py-2 text-sm font-black text-[#FF6A00]"
+              >
+                {showAllAreas ? "Show less" : "View all"}
+              </button>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {visibleAreas.map((area) => (
+                <button
+                  key={area}
+                  type="button"
+                  onClick={() => setShowLocationGate(true)}
+                  className="rounded-full border border-slate-200 bg-white px-3.5 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:border-[#FF6A00] hover:text-[#FF6A00]"
+                >
+                  {area}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-10">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="rounded-[1.6rem] bg-[#FF6A00] p-6 text-white shadow-[0_18px_45px_rgba(255,106,0,0.16)] md:p-8">
+            <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.24em]">
+                  Bike pickup
+                </p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
+                  Search pickup and drop points on the map.
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/90 md:text-base">
+                  Customers can use current location, search pickup and drop
+                  addresses, and switch satellite mode on the ride map.
+                </p>
+                <Link
+                  href="/rides"
+                  className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#07111F] px-5 py-3 text-sm font-black text-white"
+                >
+                  <Bike className="h-4 w-4" />
+                  Open bike pickup
+                </Link>
+              </div>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {cityCoverage.map((item, index) => (
+                  <button
+                    key={item.city}
+                    type="button"
+                    onClick={() => selectCoverageCity(index)}
+                    className="rounded-[1rem] border border-white/35 bg-white px-4 py-3 text-left text-sm font-black text-[#07111F] shadow-[0_12px_28px_rgba(7,17,31,0.08)] transition hover:bg-[#07111F] hover:text-white"
+                  >
+                    <MapPin className="mb-2 h-4 w-4 text-[#FF6A00]" />
+                    {item.city}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-12">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+            <div className="grid items-center gap-6 lg:grid-cols-[0.75fr_1.25fr]">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#FF6A00]">
+                  Popular now
+                </p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight">
+                  Clear tasks, clear price, clean booking.
+                </h2>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {featuredTasks.map(({ service, subcategory }) => (
+                  <Link
+                    key={`${service.slug}-${subcategory.slug}`}
+                    href={`/services/${service.slug}/${subcategory.slug}`}
+                    className="group flex items-center gap-4 rounded-[1rem] border border-slate-200 bg-white p-3 transition hover:border-[#FF6A00] hover:shadow-md"
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FF6A00]/10 text-[#FF6A00]">
+                      <BadgeCheck className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-black">{subcategory.name}</p>
+                      <p className="truncate text-xs font-bold text-slate-500">
+                        {service.name} / {subcategory.turnaround}
+                      </p>
+                    </div>
+                    <p className="text-sm font-black">Rs. {subcategory.starterPrice}+</p>
+                    <ChevronRight className="h-5 w-5 text-[#FF6A00] transition group-hover:translate-x-0.5" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {showLocationGate && <LocationGate onClose={() => setShowLocationGate(false)} />}
+    </main>
+  );
+}
+
+function PhotoTaskCard({ task }: { task: TaskCard }) {
+  return (
+    <Link
+      href={task.href}
+      className="group flex min-h-[282px] flex-col overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white shadow-[0_14px_35px_rgba(7,17,31,0.08)]"
+    >
+      <div className="relative h-52 overflow-hidden bg-[#f7f8fa]">
+        <Image
+          src={task.image}
+          alt={task.title}
+          fill
+          sizes="282px"
+          className="object-contain transition duration-500 group-hover:scale-[1.035]"
+          style={{ objectPosition: task.position }}
+        />
+      </div>
+      <div className="flex flex-1 items-end justify-between gap-3 p-4">
+        <div>
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-[#fff2df] px-2.5 py-1 text-[11px] font-black text-[#07111F]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#FF6A00] motion-pulse-dot" />
+            {task.status}
+          </p>
+          <h3 className="mt-2 text-lg font-black leading-tight text-[#07111F]">
+            {task.title}
+          </h3>
+        </div>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#FF6A00] shadow-[0_10px_24px_rgba(7,17,31,0.18)] transition group-hover:translate-x-0.5">
+          <ArrowRight className="h-4 w-4" />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function SpeedFixBookingFlow() {
+  return (
+    <div className="mt-10 flex flex-col items-center justify-center gap-7 lg:flex-row lg:items-end lg:gap-10">
+      <PhoneShowcase step="01" title={steps[0].title} text={steps[0].text}>
+        <ChoosePhoneScreen />
+      </PhoneShowcase>
+
+      <PhoneShowcase step="02" title={steps[1].title} text={steps[1].text} active>
+        <SchedulePhoneScreen />
+      </PhoneShowcase>
+
+      <PhoneShowcase step="03" title={steps[2].title} text={steps[2].text}>
+        <TrackPhoneScreen />
+      </PhoneShowcase>
+    </div>
+  );
+}
+
+function PhoneShowcase({
+  step,
+  title,
+  text,
+  active = false,
+  children,
+}: {
+  step: string;
+  title: string;
+  text: string;
+  active?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className={`w-full max-w-[300px] ${active ? "lg:max-w-[360px]" : "lg:max-w-[270px]"}`}>
+      <div
+        className={`rounded-[2.25rem] bg-white p-2 shadow-[0_24px_70px_rgba(7,17,31,0.1)] ${
+          active ? "border-2 border-[#FF6A00]" : "border border-slate-200"
+        }`}
+      >
+        <div className="overflow-hidden rounded-[1.9rem] border border-slate-200 bg-white">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <span className="text-[11px] font-black">12:15</span>
+            <span className="h-1.5 w-16 rounded-full bg-slate-200" />
+            <span className="rounded-full bg-[#07111F] px-2 py-1 text-[10px] font-black text-white">
+              SF
+            </span>
+          </div>
+          <div className={active ? "min-h-[500px]" : "min-h-[430px]"}>
+            {children}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 text-center">
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-[#FF6A00]">
+          Step {step}
+        </p>
+        <h3 className="mt-2 text-xl font-black">{title}</h3>
+        <p className="mx-auto mt-2 max-w-[280px] text-sm font-semibold leading-6 text-slate-600">
+          {text}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ChoosePhoneScreen() {
+  const items = [
+    ["Cleaning", "/services/speedfix-cleaning-kitchen.png"],
+    ["Electrician", "/services/speedfix-electrician-switch.png"],
+    ["Plumbing", "/services/speedfix-plumbing-sink.png"],
+    ["AC Service", "/services/speedfix-ac-service.png"],
+  ];
+
+  return (
+    <div className="bg-[#fffaf5] p-4">
+      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#FF6A00]">
+        SpeedFix home
+      </p>
+      <h4 className="mt-2 text-2xl font-black leading-tight">
+        What do you need today?
+      </h4>
+      <div className="mt-4 rounded-full border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-400">
+        Search cleaning, repairs...
+      </div>
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        {items.map(([label, image]) => (
+          <div
+            key={label}
+            className="overflow-hidden rounded-[1rem] border border-slate-200 bg-white shadow-sm"
+          >
+            <div className="relative h-28 bg-slate-100">
+              <Image
+                src={image}
+                alt={label}
+                fill
+                sizes="140px"
+                className="object-cover object-center"
+              />
+            </div>
+            <p className="px-3 py-2 text-sm font-black">{label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SchedulePhoneScreen() {
+  const days = ["M", "T", "W", "T", "F", "S", "S"];
+  const dates = ["24", "25", "26", "27", "28", "29", "30"];
+
+  return (
+    <div className="bg-white p-5">
+      <div className="rounded-[1.3rem] border border-[#FF6A00]/30 bg-[#fff7ef] p-5 text-center">
+        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#FF6A00]">
+          At your time
+        </p>
+        <h4 className="mt-2 text-3xl font-black leading-tight">Time & schedule</h4>
+      </div>
+      <div className="mt-5 rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-black">Schedule</p>
+          <span className="rounded-full bg-[#fff2df] px-3 py-1 text-xs font-black">
+            Multiple
+          </span>
+        </div>
+        <div className="mt-4 grid grid-cols-7 gap-1.5 text-center">
+          {days.map((day, index) => (
+            <div key={`${day}-${index}`}>
+              <p className="text-[10px] font-black text-slate-400">{day}</p>
+              <span
+                className={`mt-2 flex h-9 items-center justify-center rounded-full text-xs font-black ${
+                  index === 4
+                    ? "bg-[#FF6A00] text-white speedfix-selected-day"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {dates[index]}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 space-y-2">
+          {["Kitchen cleaning", "6:30 PM", "Pay after service"].map((item) => (
+            <div
+              key={item}
+              className="flex items-center justify-between rounded-full border border-slate-200 px-3 py-2 text-xs font-black"
+            >
+              <span>{item}</span>
+              <BadgeCheck className="h-4 w-4 text-[#FF6A00]" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mt-5 overflow-hidden rounded-[1.2rem] border border-slate-200 bg-white shadow-sm">
+        <div className="relative h-28">
+          <Image
+            src="/services/speedfix-cleaning-kitchen.png"
+            alt="SpeedFix worker assigned"
+            fill
+            sizes="280px"
+            className="object-cover object-[center_30%]"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrackPhoneScreen() {
+  return (
+    <div className="bg-[#fffaf5] p-4">
+      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#FF6A00]">
+        Google map live
+      </p>
+      <h4 className="mt-2 text-2xl font-black leading-tight">
+        Track your expert.
+      </h4>
+      <div className="relative mt-4 h-52 overflow-hidden rounded-[1.2rem] border border-slate-200 bg-slate-100">
+        <iframe
+          title="Google map showing SpeedFix worker route in Bengaluru"
+          src="https://www.google.com/maps?q=Bengaluru&z=13&output=embed"
+          className="absolute inset-0 h-full w-full"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+        <div className="absolute bottom-4 left-4 right-4 rounded-[1rem] border border-slate-200 bg-white p-3 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-white bg-slate-100 shadow-sm">
+              <Image
+                src="/services/speedfix-cleaning-kitchen.png"
+                alt="SpeedFix worker"
+                fill
+                sizes="48px"
+                className="object-cover object-[center_18%]"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-black">SpeedFix expert</p>
+              <p className="text-xs font-bold text-slate-500">10 min away</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
+          Updates
+        </p>
+        <div className="mt-3 space-y-2">
+          {["Professional assigned", "On the way", "Support online"].map((item) => (
+            <p key={item} className="flex items-center gap-2 text-xs font-black">
+              <span className="h-2 w-2 rounded-full bg-[#FF6A00] motion-pulse-dot" />
+              {item}
+            </p>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
