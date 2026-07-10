@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { serverDb } from "@/lib/firebase-server";
+import { sendNewServiceRequestNotification } from "@/lib/email";
 import { getServiceBySlug, resolveServiceSlug } from "@/lib/serviceCatalog";
 
 const corsHeaders = {
@@ -171,6 +172,15 @@ export async function POST(request: Request) {
     };
 
     const docRef = await addDoc(collection(serverDb, "bookings"), bookingRecord);
+
+    await sendNewServiceRequestNotification({
+      requestId: docRef.id,
+      customerName: name,
+      service: service.name,
+      location: `${city} ${pincode}`.trim(),
+    }).catch((error) => {
+      console.error("SERVICE_REQUEST_EMAIL_ERROR", error);
+    });
 
     return json({
       success: true,

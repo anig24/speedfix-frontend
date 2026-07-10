@@ -121,6 +121,7 @@ export default function CustomerSettingsPage() {
     try {
       const checkoutAddress: CartAddress = {
         fullName: form.name,
+        email: user.email || "",
         phone: form.phone,
         city: form.city,
         pincode: form.pincode,

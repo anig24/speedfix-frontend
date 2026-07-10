@@ -34,6 +34,7 @@ type RazorpayWindow = Window &
 
 const EMPTY_ADDRESS: CartAddress = {
   fullName: "",
+  email: "",
   phone: "",
   city: "",
   pincode: "",
@@ -109,12 +110,18 @@ export default function CheckoutPage() {
   const validateAddress = () => {
     if (
       !address.fullName ||
+      !address.email ||
       !address.phone ||
       !address.city ||
       !address.pincode ||
       !address.addressLine
     ) {
-      setCouponMessage("Please complete name, phone, city, pincode, and address.");
+      setCouponMessage("Please complete name, email, phone, city, pincode, and address.");
+      return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.email)) {
+      setCouponMessage("Please enter a valid email address for booking updates.");
       return false;
     }
 
@@ -130,6 +137,7 @@ export default function CheckoutPage() {
       serviceName: primaryItem.serviceName,
       subcategoryName: primaryItem.subcategoryName || null,
       customerName: address.fullName,
+      customerEmail: address.email,
       customerPhone: address.phone,
       city: address.city,
       pincode: address.pincode,
@@ -259,6 +267,7 @@ export default function CheckoutPage() {
       },
       prefill: {
         name: address.fullName,
+        email: address.email,
         contact: address.phone,
       },
       theme: {
@@ -377,6 +386,13 @@ export default function CheckoutPage() {
                   value={address.fullName}
                   onChange={(event) => handleAddressChange("fullName", event.target.value)}
                   placeholder="Full name"
+                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                />
+                <input
+                  value={address.email}
+                  onChange={(event) => handleAddressChange("email", event.target.value)}
+                  placeholder="Email for booking updates"
+                  type="email"
                   className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                 />
                 <input

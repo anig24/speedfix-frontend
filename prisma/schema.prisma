@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRYING
+  SKIPPED
+}
+
+enum EmailQueueStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
+enum SupportTicketStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+model EmailLog {
+  id                String      @id @default(cuid())
+  recipient         String
+  subject           String
+  template          String
+  status            EmailStatus @default(PENDING)
+  error             String?
+  provider          String      @default("resend")
+  providerMessageId String?
+  sentAt            DateTime?
+  retryCount        Int         @default(0)
+  metadata          Json?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([recipient])
+  @@index([template])
+  @@index([status, createdAt])
+}
+
+model EmailQueue {
+  id          String           @id @default(cuid())
+  recipient   String
+  subject     String
+  template    String
+  payload     Json
+  status      EmailQueueStatus @default(PENDING)
+  attempts    Int              @default(0)
+  maxAttempts Int              @default(3)
+  lastError   String?
+  nextRunAt   DateTime         @default(now())
+  sentAt      DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([status, nextRunAt])
+  @@index([recipient])
+}
+
+model ContactInquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  service   String
+  location  String
+  message   String
+  source    String   @default("website")
+  ipAddress String?
+  userAgent String?
+  status    String   @default("NEW")
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([status, createdAt])
+}
+
+model OtpToken {
+  id         String    @id @default(cuid())
+  email      String
+  purpose    String
+  otpHash    String
+  attempts   Int       @default(0)
+  resendCount Int      @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  lastSentAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([email, purpose])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  email      String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model EmailPreference {
+  id                      String   @id @default(cuid())
+  email                   String   @unique
+  transactionalEnabled    Boolean  @default(true)
+  marketingEnabled        Boolean  @default(false)
+  bookingUpdatesEnabled   Boolean  @default(true)
+  reviewRequestsEnabled   Boolean  @default(true)
+  unsubscribedAt          DateTime?
+  unsubscribeTokenHash    String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model EmailEvent {
+  id                String   @id @default(cuid())
+  provider          String   @default("resend")
+  providerMessageId String?
+  eventType         String
+  recipient         String?
+  payload           Json
+  occurredAt        DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  @@index([providerMessageId])
+  @@index([eventType, occurredAt])
+}
+
+model InboundEmail {
+  id           String   @id @default(cuid())
+  provider     String   @default("resend")
+  messageId    String?
+  fromEmail    String
+  toEmail      String?
+  subject      String
+  textBody     String?
+  htmlBody     String?
+  attachments  Json?
+  rawPayload   Json
+  createdAt    DateTime @default(now())
+
+  supportTicket SupportTicket?
+
+  @@index([fromEmail])
+  @@index([messageId])
+}
+
+model SupportTicket {
+  id             String              @id @default(cuid())
+  inboundEmailId String?             @unique
+  inboundEmail   InboundEmail?       @relation(fields: [inboundEmailId], references: [id])
+  requesterEmail String
+  subject        String
+  status         SupportTicketStatus @default(OPEN)
+  priority       String              @default("NORMAL")
+  assignedTo     String?
+  lastReplyAt    DateTime?
+  metadata       Json?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([requesterEmail])
+  @@index([status, createdAt])
+}

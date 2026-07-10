@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createMarketplaceBooking } from "@/lib/server/serviceMarketplaceBackend";
+import { notifyBookingEmails } from "@/lib/server/bookingEmailNotifications";
 
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -40,6 +41,12 @@ export async function POST(request: Request) {
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    await notifyBookingEmails({
+      bookingData,
+      result,
+      paymentStatus: "PENDING",
+    });
 
     return NextResponse.json({
       success: true,

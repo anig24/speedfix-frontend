@@ -19,6 +19,7 @@ export type CartItem = {
 
 export type CartAddress = {
   fullName: string;
+  email: string;
   phone: string;
   city: string;
   pincode: string;
@@ -137,6 +138,7 @@ export function readCheckoutAddress(): CartAddress {
   if (!win) {
     return {
       fullName: "",
+      email: "",
       phone: "",
       city: "",
       pincode: "",
@@ -151,6 +153,7 @@ export function readCheckoutAddress(): CartAddress {
     if (!raw) {
       return {
         fullName: "",
+        email: "",
         phone: "",
         city: win.localStorage.getItem("city") || "",
         pincode: win.localStorage.getItem("pincode") || "",
@@ -159,10 +162,21 @@ export function readCheckoutAddress(): CartAddress {
       };
     }
 
-    return JSON.parse(raw) as CartAddress;
+    const parsed = JSON.parse(raw) as Partial<CartAddress>;
+
+    return {
+      fullName: parsed.fullName || "",
+      email: parsed.email || "",
+      phone: parsed.phone || "",
+      city: parsed.city || "",
+      pincode: parsed.pincode || "",
+      addressLine: parsed.addressLine || "",
+      landmark: parsed.landmark || "",
+    };
   } catch {
     return {
       fullName: "",
+      email: "",
       phone: "",
       city: "",
       pincode: "",

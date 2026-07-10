@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { createMarketplaceBooking } from "@/lib/server/serviceMarketplaceBackend";
+import { notifyBookingEmails } from "@/lib/server/bookingEmailNotifications";
 
 export async function POST(req: Request) {
   try {
@@ -49,6 +50,12 @@ export async function POST(req: Request) {
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    await notifyBookingEmails({
+      bookingData,
+      result,
+      paymentStatus: "PAID",
+    });
 
     return NextResponse.json({
       success: true,
